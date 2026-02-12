@@ -122,10 +122,6 @@ if ( $chambres === '' ) {
             ?>
         </div>
     </section>
-
-    <section class="up-immo-single__content">
-        <?php echo apply_filters( 'the_content', $post->post_content ); ?>
-    </section>
 </article>
 <?php
 wp_reset_postdata();

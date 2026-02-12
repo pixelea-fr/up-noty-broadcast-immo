@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Le shortcode `[noty_annonce]` n'affiche plus le contenu (`the_content`) : sortie basée uniquement sur les métas/taxonomies/photos.
+- Ajout d'une protection anti-récursion pour éviter les boucles si `[noty_annonce]` est utilisé dans le contenu d'une annonce.
+
 ## 1.1.0
 
 - Passage des métadonnées du plugin vers le préfixe `up_` (sans underscore initial) + rétro-compatibilité de lecture avec les anciennes métas `_noty_*`.

@@ -132,6 +132,8 @@ class Noty_Shortcode {
     }
 
     public function render_annonce( $atts ) {
+        static $rendering = array();
+
         $atts = shortcode_atts( array(
             'id' => 0,
             'uuid' => '',
@@ -167,7 +169,16 @@ class Noty_Shortcode {
             return '';
         }
 
+        $render_key = (string) (int) $post_id;
+        if ( isset( $rendering[ $render_key ] ) ) {
+            return '';
+        }
+        $rendering[ $render_key ] = true;
+
         $template = $this->get_template_for_single( $post_id );
-        return $this->render_template( $template, array( 'post_id' => $post_id ) );
+        $html = $this->render_template( $template, array( 'post_id' => $post_id ) );
+
+        unset( $rendering[ $render_key ] );
+        return $html;
     }
 }
