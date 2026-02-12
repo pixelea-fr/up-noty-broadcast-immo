@@ -58,8 +58,17 @@ class Noty_Sync {
         
         $existing_posts = get_posts( array(
             'post_type'  => 'noty_annonce',
-            'meta_key'   => '_noty_uuid',
-            'meta_value' => $uuid,
+            'meta_query' => array(
+                'relation' => 'OR',
+                array(
+                    'key'   => 'up_uuid',
+                    'value' => $uuid,
+                ),
+                array(
+                    'key'   => '_noty_uuid',
+                    'value' => $uuid,
+                ),
+            ),
             'posts_per_page' => 1,
         ) );
 
@@ -255,52 +264,52 @@ class Noty_Sync {
     }
 
     private function update_metas( $post_id, $annonce ) {
-        $this->update_meta_value( $post_id, '_noty_raw', $annonce );
+        $this->update_meta_value( $post_id, 'up_raw', $annonce );
 
-        update_post_meta( $post_id, '_noty_uuid', $annonce['uuid'] );
-        update_post_meta( $post_id, '_noty_reference', $annonce['reference'] ?? '' );
+        update_post_meta( $post_id, 'up_uuid', $annonce['uuid'] );
+        update_post_meta( $post_id, 'up_reference', $annonce['reference'] ?? '' );
 
-        $this->update_meta_value( $post_id, '_noty_transaction', $annonce['transaction'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_loyer', $annonce['loyer'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_loyer_periodicite', $annonce['loyer_periodicite'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_charges_incluses', $annonce['charges_incluses'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_montant_charges', $annonce['montant_charges'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_montant_etat_lieux', $annonce['montant_etat_lieux'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_meuble', $annonce['meuble'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_montant_depot_garantie', $annonce['montant_depot_garantie'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_transaction', $annonce['transaction'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_loyer', $annonce['loyer'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_loyer_periodicite', $annonce['loyer_periodicite'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_charges_incluses', $annonce['charges_incluses'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_montant_charges', $annonce['montant_charges'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_montant_etat_lieux', $annonce['montant_etat_lieux'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_meuble', $annonce['meuble'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_montant_depot_garantie', $annonce['montant_depot_garantie'] ?? '' );
         
         $bien = $annonce['bien'] ?? [];
-        $this->update_meta_value( $post_id, '_noty_nature', $bien['nature'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_surface', $bien['surface'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_surface_habitable', $bien['surface_habitable'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_nb_pieces', $bien['nb_pieces'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_nb_chambres', $bien['nb_chambres'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_accessibilite', $bien['accessibilite'] ?? [] );
-        $this->update_meta_value( $post_id, '_noty_situation_locative', $bien['situation_locative'] ?? [] );
-        $this->update_meta_value( $post_id, '_noty_emplacement', $bien['emplacement'] ?? [] );
+        $this->update_meta_value( $post_id, 'up_nature', $bien['nature'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_surface', $bien['surface'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_surface_habitable', $bien['surface_habitable'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_nb_pieces', $bien['nb_pieces'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_nb_chambres', $bien['nb_chambres'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_accessibilite', $bien['accessibilite'] ?? [] );
+        $this->update_meta_value( $post_id, 'up_situation_locative', $bien['situation_locative'] ?? [] );
+        $this->update_meta_value( $post_id, 'up_emplacement', $bien['emplacement'] ?? [] );
         
         $commune = $bien['commune'] ?? [];
-        $this->update_meta_value( $post_id, '_noty_ville', $commune['libelle'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_code_postal', $commune['code_postal'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_code_insee', $commune['code_insee'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_ville', $commune['libelle'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_code_postal', $commune['code_postal'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_code_insee', $commune['code_insee'] ?? '' );
         
         $transaction = $annonce['transaction'] ?? [];
         if ( is_array( $transaction ) ) {
-            $this->update_meta_value( $post_id, '_noty_prix', $transaction['prix'] ?? '' );
-            $this->update_meta_value( $post_id, '_noty_transaction_type', $transaction['type'] ?? '' );
+            $this->update_meta_value( $post_id, 'up_prix', $transaction['prix'] ?? '' );
+            $this->update_meta_value( $post_id, 'up_transaction_type', $transaction['type'] ?? '' );
         } else {
-            $this->update_meta_value( $post_id, '_noty_prix', $annonce['prix'] ?? '' );
-            $this->update_meta_value( $post_id, '_noty_transaction_type', (string) $transaction );
+            $this->update_meta_value( $post_id, 'up_prix', $annonce['prix'] ?? '' );
+            $this->update_meta_value( $post_id, 'up_transaction_type', (string) $transaction );
         }
         
         // DPE / GES
         $perf = $bien['performance_energetique'] ?? [];
-        $this->update_meta_value( $post_id, '_noty_dpe_classe', $perf['dpe_classe'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_dpe_value', $perf['dpe_value'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_ges_classe', $perf['ges_classe'] ?? '' );
-        $this->update_meta_value( $post_id, '_noty_ges_value', $perf['ges_value'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_dpe_classe', $perf['dpe_classe'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_dpe_value', $perf['dpe_value'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_ges_classe', $perf['ges_classe'] ?? '' );
+        $this->update_meta_value( $post_id, 'up_ges_value', $perf['ges_value'] ?? '' );
 
-        update_post_meta( $post_id, '_noty_last_sync', current_time( 'mysql' ) );
+        update_post_meta( $post_id, 'up_last_sync', current_time( 'mysql' ) );
     }
 
     private function update_meta_value( $post_id, $meta_key, $value ) {
@@ -335,8 +344,17 @@ class Noty_Sync {
             
             $existing_media = get_posts( array(
                 'post_type'   => 'attachment',
-                'meta_key'    => '_noty_photo_uuid',
-                'meta_value'  => $photo_uuid,
+                'meta_query'  => array(
+                    'relation' => 'OR',
+                    array(
+                        'key'   => 'up_photo_uuid',
+                        'value' => $photo_uuid,
+                    ),
+                    array(
+                        'key'   => '_noty_photo_uuid',
+                        'value' => $photo_uuid,
+                    ),
+                ),
                 'posts_per_page' => 1,
             ) );
 
@@ -388,7 +406,7 @@ class Noty_Sync {
                         require_once( ABSPATH . 'wp-admin/includes/image.php' );
                         $attachment_data = wp_generate_attachment_metadata( $attachment_id, $upload['file'] );
                         wp_update_attachment_metadata( $attachment_id, $attachment_data );
-                        update_post_meta( $attachment_id, '_noty_photo_uuid', $photo_uuid );
+                        update_post_meta( $attachment_id, 'up_photo_uuid', $photo_uuid );
                     }
                 }
             }
@@ -403,7 +421,7 @@ class Noty_Sync {
         }
 
         if ( ! empty( $attachment_ids ) ) {
-            update_post_meta( $post_id, '_noty_photo_ids', array_values( array_unique( $attachment_ids ) ) );
+            update_post_meta( $post_id, 'up_photo_ids', array_values( array_unique( $attachment_ids ) ) );
         }
     }
 

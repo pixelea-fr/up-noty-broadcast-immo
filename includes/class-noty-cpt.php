@@ -108,21 +108,32 @@ class Noty_CPT {
 
     public function render_location_metabox( $post ) {
         $fields = array(
-            'Type de transaction'     => '_noty_transaction_type',
-            'Loyer'                   => '_noty_loyer',
-            'Périodicité du loyer'    => '_noty_loyer_periodicite',
-            'Charges incluses'        => '_noty_charges_incluses',
-            'Montant des charges'     => '_noty_montant_charges',
-            'Montant état des lieux'  => '_noty_montant_etat_lieux',
-            'Meublé'                  => '_noty_meuble',
-            'Dépôt de garantie'       => '_noty_montant_depot_garantie',
+            'Type de transaction'     => array( 'up_transaction_type', '_noty_transaction_type' ),
+            'Loyer'                   => array( 'up_loyer', '_noty_loyer' ),
+            'Périodicité du loyer'    => array( 'up_loyer_periodicite', '_noty_loyer_periodicite' ),
+            'Charges incluses'        => array( 'up_charges_incluses', '_noty_charges_incluses' ),
+            'Montant des charges'     => array( 'up_montant_charges', '_noty_montant_charges' ),
+            'Montant état des lieux'  => array( 'up_montant_etat_lieux', '_noty_montant_etat_lieux' ),
+            'Meublé'                  => array( 'up_meuble', '_noty_meuble' ),
+            'Dépôt de garantie'       => array( 'up_montant_depot_garantie', '_noty_montant_depot_garantie' ),
         );
 
         echo '<table class="widefat striped" style="margin-top: 8px;">';
         echo '<tbody>';
 
-        foreach ( $fields as $label => $meta_key ) {
-            $value = get_post_meta( $post->ID, $meta_key, true );
+        foreach ( $fields as $label => $meta_keys ) {
+            $value = '';
+            if ( is_array( $meta_keys ) ) {
+                foreach ( $meta_keys as $k ) {
+                    $tmp = get_post_meta( $post->ID, $k, true );
+                    if ( $tmp !== '' && $tmp !== null ) {
+                        $value = $tmp;
+                        break;
+                    }
+                }
+            } else {
+                $value = get_post_meta( $post->ID, $meta_keys, true );
+            }
 
             if ( $value === '1' ) {
                 $display = 'Oui';
@@ -145,7 +156,10 @@ class Noty_CPT {
     }
 
     public function render_photos_metabox( $post ) {
-        $photo_ids = get_post_meta( $post->ID, '_noty_photo_ids', true );
+        $photo_ids = get_post_meta( $post->ID, 'up_photo_ids', true );
+        if ( ! is_array( $photo_ids ) || empty( $photo_ids ) ) {
+            $photo_ids = get_post_meta( $post->ID, '_noty_photo_ids', true );
+        }
         if ( ! is_array( $photo_ids ) || empty( $photo_ids ) ) {
             echo '<p>Aucune photo.</p>';
             return;
@@ -167,7 +181,10 @@ class Noty_CPT {
     }
 
     public function render_raw_metabox( $post ) {
-        $raw = get_post_meta( $post->ID, '_noty_raw', true );
+        $raw = get_post_meta( $post->ID, 'up_raw', true );
+        if ( $raw === '' || $raw === null ) {
+            $raw = get_post_meta( $post->ID, '_noty_raw', true );
+        }
         if ( $raw === '' || $raw === null ) {
             echo '<p>Aucune donnée brute.</p>';
             return;

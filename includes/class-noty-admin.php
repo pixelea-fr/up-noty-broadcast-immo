@@ -15,6 +15,15 @@ class Noty_Admin {
             'noty-settings',
             array( $this, 'settings_page' )
         );
+
+        add_submenu_page(
+            'edit.php?post_type=noty_annonce',
+            'Mode d\'emploi',
+            'Mode d\'emploi',
+            'manage_options',
+            'noty-shortcodes',
+            array( $this, 'shortcodes_page' )
+        );
     }
 
     public function register_settings() {
@@ -106,6 +115,86 @@ class Noty_Admin {
                 <p>Cliquez sur le bouton ci-dessous pour lancer immédiatement la récupération des annonces.</p>
                 <?php submit_button( 'Synchroniser maintenant', 'secondary' ); ?>
             </form>
+        </div>
+        <?php
+    }
+
+    public function shortcodes_page() {
+        ?>
+        <div class="wrap">
+            <h1>Mode d'emploi</h1>
+
+            <h2>Shortcodes disponibles</h2>
+
+            <h3><code>[noty_annonces]</code></h3>
+            <p>Affiche une liste d'annonces sous forme de cards.</p>
+            <table class="widefat striped" style="max-width:920px;">
+                <thead>
+                    <tr>
+                        <th>Attribut</th>
+                        <th>Description</th>
+                        <th>Exemple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>Nombre maximum d'annonces.</td>
+                        <td><code>[noty_annonces limit="12"]</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>nature</code></td>
+                        <td>Filtre par slug de la taxonomie <code>noty_nature</code>.</td>
+                        <td><code>[noty_annonces nature="appartement"]</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>ville</code></td>
+                        <td>Filtre par slug de la taxonomie <code>noty_ville</code>.</td>
+                        <td><code>[noty_annonces ville="paris"]</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>transaction</code></td>
+                        <td>Filtre par slug de la taxonomie <code>noty_transaction</code>.</td>
+                        <td><code>[noty_annonces transaction="location"]</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Exemples</h4>
+            <p><code>[noty_annonces]</code></p>
+            <p><code>[noty_annonces limit="6" transaction="location"]</code></p>
+            <p><code>[noty_annonces limit="9" ville="lyon" nature="maison"]</code></p>
+
+            <hr>
+
+            <h3><code>[noty_annonce]</code></h3>
+            <p>Affiche une annonce complète (template single, avec variantes selon la transaction si disponible).</p>
+            <table class="widefat striped" style="max-width:920px;">
+                <thead>
+                    <tr>
+                        <th>Attribut</th>
+                        <th>Description</th>
+                        <th>Exemple</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>ID du post WordPress (CPT <code>noty_annonce</code>).</td>
+                        <td><code>[noty_annonce id="123"]</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>uuid</code></td>
+                        <td>UUID Noty de l'annonce (recherche sur la méta <code>up_uuid</code> puis fallback <code>_noty_uuid</code>).</td>
+                        <td><code>[noty_annonce uuid="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Exemples</h4>
+            <p><code>[noty_annonce]</code> (sur une page liée à une annonce)</p>
+            <p><code>[noty_annonce id="123"]</code></p>
+            <p><code>[noty_annonce uuid="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]</code></p>
         </div>
         <?php
     }
