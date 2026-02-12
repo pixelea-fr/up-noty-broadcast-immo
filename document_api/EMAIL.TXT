@@ -1,0 +1,24 @@
+
+ 
+Comme convenu, voici les informations techniques à connaitre pour la récupération de biens immobiliers depuis Noty.
+ 
+Noty Broadcast est la plateforme développée par Noteo pour simplifier les échanges entre les outils de négociation et les partenaires (sites internet, carrousel de biens, etc).
+Il s'agit d'une API HTTP REST entièrement évolutive qui suit les standards d'OpenAPI v3 afin de garantir la meilleure interopérabilité possible.
+Elle retourne un flux JSON global ou incrémental. Elle gère le multi-étude (récupération de plusieurs offices notariales en même temps si nécessaire).
+Une documentation privée, en ligne et à jour est accessible pour tous les partenaires : https://broadcast.noty.fr/doc/destination
+ 
+Voici vos identifiants d'accès à la documentation :
+ 
+Identifiant :  Pixelea
+Mot de passe :  q0+ofK/D
+ 
+ 
+Pour tester l'intégration du flux dans votre site, nous mettons en place une plateforme de test disponible sur l'adresse suivante : https://api.broadcast.test.noty.fr
+Votre jeton d'accès est le suivant :  HCcSklDAP3RutNWNSIVToxiw3WtHv0XxIDhUgdwx4mE
+Veuillez bien lire la partie Tester l'intégration de votre client avant toute intégration. Il s'agit de biens "fictifs".
+ 
+ 
+Une fois les développements terminés, merci de nous contacter pour un passage en production.
+L'accès à la plateforme de production est soumis à facturation au prestataire qui souhaite récupérer les données de biens immobiliers. La facturation dépend du nombre d'offices notariales rattachées. Le contrat final sera à nous retourner complété et signé pour toute utilisation de la plateforme en production, nous vous le transmettrons quand vos tests seront validés.
+  
+Nous restons à votre entière disposition pour de plus ample information.

@@ -1,0 +1,1197 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Noty Broadcast",
+    "description": "# Introduction\nNoty Broadcast est une API REST permettant le dépôt et la récupération\nd'annonces immobilières au format JSON. Nous utilisons les codes de réponse,\nles verbes et l'authentification standard du protocole HTTP. Les flux transitent\nexclusivement en HTTPS.\n\nNoty Broadcast se compose de deux types de clients : *les clients sources* et\n*les client destinations*.\n\n*Les clients sources* bénéficient de fonctionnalités leur permettant de déposer\ndes annonces pour le compte d'offices notariales. *Les clients destinations*,\nquant à eux, bénéficient de fonctionnalités pour consulter les annonces et\nrécupérer les photos associées.\n\nLa documentation ci-après ne concerne que *les clients destinations*.\n\n# Pagination\nLes collections retournées sont paginées et structurées comme suit :\n\n```json\n{\n  \"page\": \"(integer) Page courante.\",\n  \"pages\": \"(integer) Nombre de pages disponibles.\",\n  \"total\": \"(integer) Nombre d'éléments total présent dans la collection.\",\n  \"limit\": \"(integer) Nombre d'éléments retournés par page (defaut : 100, max : 100).\",\n  \"results\": \"(array) Elements de la collection pour la page courante.\"\n}\n```\n\nexemple :\n\n```json\n{\n  \"page\": 1,\n  \"pages\": 5,\n  \"total\": 10,\n  \"limit\": 2,\n  \"results\": [\n    {\n      \"uuid\": \"...\",\n      \"diffused\": true\n    },\n    {\n      \"uuid\": \"...\",\n      \"diffused\": false\n    }\n  ]\n}\n```\n\n# Réponses possibles\n\n| Code | Description |\n|--|--|\n| 200 **(OK)** | Requête traitée avec succès. La réponse dépendra de la méthode de requête utilisée. |\n\n# Erreurs\nLes erreurs sont toutes présentées sous le même format :\n```json\n{\n  \"message\": \"Message d'erreur.\"\n}\n```\n\nErreurs possibles :\n\n| Code | Description |\n|--|--|\n| 401 **(Unauthorized)** | La route que vous demandez est soumise à authentification. Echec lors de votre authentification. |\n| 404 **(Not Found)** | La route ou la ressource que vous demandez n'existe pas. |\n| 500 **(Internal Server Error)** | Une erreur interne est survenue et a été envoyée à notre support. Nous la traiterons dans les plus bref délais. |\n| 503 **(Service Unavailable)** | Le service est actuellement indisponible. Merci de réessayer. Si le problème persiste, contactez notre support. |\n\n# Authentification\nToutes les ressources sont soumises à une authentification préalable. Cette authentification est réalisée via l'en-tête HTTP `AUTH-TOKEN`.\nIndiquez votre clé en tant que valeur de cet en-tête (exemple : `AUTH-TOKEN: myAuthToken`).\n\n# Téléchargement des photos via une URL signée\nIl est possible de télécharger les photos d'une annonce sans authentification à l'aide de l'URL signée fournie pour chaque photo.\nChaque URL à une validité de 90 minutes.\n\nIl reste **recommandé** d'utiliser l'authentification `AUTH-TOKEN` et de télécharger les photos sur votre serveur afin de ne pas dépasser le quota d'appels API.\n\n# Tester l'intégration de votre client\nPour pouvoir tester la récupération des annonces, votre compte a été associé à des offices fictives, elles même rattachés à une liste d'annonces.\n\nCette liste évolue sur le mois de juillet 2021\n\nLorsque vous appelez `GET /annonces`, vous récupérez l'ensemble des annonces possibles dans un état dit *initial*.\n\nVous avez toujours la possibilité de renseigner le paramètre habituel `updated_since` pour récupérer toutes les modifications effectuées depuis la date donnée.\n\nPour simuler des modifications sur les annonces, il existe un paramètre supplémentaire `today` permettant de simuler la date du jour afin de récupérer l'état des annonces au jour donné.\n\nLes annonces ont été modifié comme suit :\n\n| Date | Modifications  |\n|---|---|\n| 2 juillet | État initial 15 annonces : <ul><li>`3 types` (Location / Vente traditionnelle / Vente viager)</li><li>`6 natures` (Appartement / Maison / Immeuble / Garage / Terrain / Autre)</li></ul> toutes diffusées, sans les combinaisons suivantes (`Location / Immeuble`, `Vente traditionnelle / Maison`, `Vente viager / Garage`)|\n| 10 juillet | <ul><li>Location / Appartement : Modification (Bien)</li><li>Location / Maison : Suppression</li><li>Location / Immeuble : Nouveau</li><li>Location / Garage : Modification (Nouvelle photo + changement de rank de l'ancienne)</li><li>Location / Terrain : Suppression</li><li>Location / Autre : Modification (Contact)</li><li>Vente traditionnelle / Appartement : Modification (Commune)</li><li>Vente traditionnelle / Maison : Nouveau</li><li>Vente traditionnelle / Immeuble : Modification (Suppression de la photo)</li><li>Vente traditionnelle / Garage : Suppression</li><li>Vente traditionnelle / Terrain : Modification (Situation locative + accessibilite)</li><li>Vente traditionnelle / Autre : Aucune modification</li><li>Vente viager / Appartement : Aucune modification</li><li>Vente viager / Maison : Modification (bien)</li><li>Vente viager / Immeuble : Modification (surface)</li><li>Vente viager / Garage : Nouveau</li><li>Vente viager / Terrain : Suppression</li><li>Vente viager / Autre : Aucune modification</li></ul> |\n| 15 juillet | <ul><li>Location / Appartement : Aucune modification</li><li>Location / Maison : Ré-intégration</li><li>Location / Immeuble : Aucune modification</li><li>Location / Garage : Aucune modification</li><li>Location / Terrain : Aucune modification</li><li>Location / Autre : Aucune modification</li><li>Vente traditionnelle / Appartement : Aucune modification</li><li>Vente traditionnelle / Maison : Aucune modification</li><li>Vente traditionnelle / Immeuble : Aucune modification</li><li>Vente traditionnelle / Garage : Aucune modification</li><li>Vente traditionnelle / Terrain : Aucune modification</li><li>Vente traditionnelle / Autre : Aucune modification</li><li>Vente viager / Appartement : Aucune modification</li><li>Vente viager / Maison : Aucune modification</li><li>Vente viager / Immeuble : Aucune modification</li><li>Vente viager / Garage : Aucune modification</li><li>Vente viager / Terrain : Aucune modification</li><li>Vente viager / Autre : Aucune modification</li></ul> |\n",
+    "version": "1.5.0",
+    "contact": {
+      "name": "Support Soqrate",
+      "email": "support@soqrate.com"
+    }
+  },
+  "paths": {
+    "/offices": {
+      "get": {
+        "summary": "Lister des offices",
+        "description": "Retourne la liste de vos offices.",
+        "operationId": "get_offices",
+        "tags": [
+          "Offices"
+        ],
+        "security": [
+          {
+            "AUTH-TOKEN": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "in": "query",
+            "name": "crpcen",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "nullable": true,
+              "minLength": 5,
+              "maxLength": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/offices_collection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          }
+        }
+      }
+    },
+    "/annonces": {
+      "get": {
+        "summary": "Lister des annonces",
+        "description": "Retourne la liste des annonces.",
+        "operationId": "get_annonces",
+        "tags": [
+          "Annonces"
+        ],
+        "security": [
+          {
+            "AUTH-TOKEN": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/page"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "in": "query",
+            "name": "updated_since",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ce filtre est une date au format ISO 8601 (Y-m-d\\TH:i:sO) permettant de récupérer toutes les annonces modifiées depuis celle-ci"
+          },
+          {
+            "in": "query",
+            "name": "crpcen",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Ce filtre est un tableau permettant de récupérer toutes les annonces correspondant aux CRPCEN des offices indiqués."
+          },
+          {
+            "in": "query",
+            "name": "type_transaction",
+            "schema": {
+              "type": "array",
+              "enum": [
+                "vente_traditionnelle",
+                "vente_immo_interactif",
+                "vente_viager",
+                "location"
+              ]
+            },
+            "description": "Ce filtre est un tableau permettant de récupérer uniquement les annonces dont le type est renseigné."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/annonces_collection"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          }
+        }
+      }
+    },
+    "/annonces/{uuid_annonce}/photos/{uuid_photo}": {
+      "parameters": [
+        {
+          "name": "uuid_annonce",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "uuid_photo",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "name": "signature",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Requis pour télécharger la photo à l'aide d'une URL signée."
+        },
+        {
+          "name": "expires",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Requis pour télécharger la photo à l'aide d'une URL signée."
+        }
+      ],
+      "get": {
+        "summary": "Téléchager une photo",
+        "operationId": "get_annonces_photo",
+        "tags": [
+          "Annonces"
+        ],
+        "security": [
+          {
+            "AUTH-TOKEN": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "office": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "crpcen": {
+            "type": "string",
+            "readOnly": true
+          },
+          "raison_sociale": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "uuid",
+          "crpcen",
+          "raison_sociale"
+        ]
+      },
+      "annonce": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "transaction"
+        },
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "reference": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Le contenu est encodé en UTF-8 et les sauts de ligne avec `\\n`."
+          },
+          "description_courte": {
+            "type": "string",
+            "nullable": true,
+            "maximum": 200
+          },
+          "exclusivite": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Indique si l'annonce est une exclusivité de l'office"
+          },
+          "url_visite_virtuelle": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL absolue vers la visite virtuelle de l'annonce"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "diffused": {
+            "type": "boolean",
+            "readOnly": true,
+            "description": "Indique si l'annonce doit être ou non diffusée"
+          },
+          "office": {
+            "$ref": "#/components/schemas/office"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/contact"
+          },
+          "bien": {
+            "$ref": "#/components/schemas/bien"
+          },
+          "transaction": {
+            "type": "string",
+            "enum": [
+              "location",
+              "vente_traditionnelle",
+              "vente_immo_interactif",
+              "vente_viager"
+            ]
+          }
+        },
+        "required": [
+          "office",
+          "contact",
+          "bien",
+          "transaction",
+          "reference",
+          "description",
+          "diffused"
+        ]
+      },
+      "vente_traditionnelle": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/annonce"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "prix_hni": {
+                "type": "number",
+                "description": "Montant de la vente Honoraires de Négociation Inclus (HNI)."
+              },
+              "prix_nv": {
+                "type": "number",
+                "description": "**Retourné pour une vente en charge acquéreur.**<br>Montant de la vente Net Vendeur (NV)."
+              },
+              "type_honoraires": {
+                "type": "string",
+                "enum": [
+                  "charge_vendeur",
+                  "charge_acquereur"
+                ]
+              },
+              "honoraires": {
+                "type": "number",
+                "nullable": true,
+                "description": "**Retourné pour une vente en charge acquéreur.**<br>Montant des honoraires de négociation."
+              },
+              "honoraires_pourcentage": {
+                "type": "number",
+                "nullable": true,
+                "description": "Pourcentage des honoraires de la vente"
+              },
+              "charges_copropriete": {
+                "type": "number",
+                "nullable": true
+              },
+              "frais_acte": {
+                "type": "number",
+                "nullable": true
+              },
+              "prix": {
+                "type": "number",
+                "deprecated": true,
+                "description": "Utiliser les champs `prix_hni` et `prix_nv` à la place."
+              }
+            },
+            "required": [
+              "prix_hni",
+              "type_honoraires"
+            ]
+          }
+        ]
+      },
+      "vente_immo_interactif": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/annonce"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "systeme_encheres": {
+                "type": "string",
+                "enum": [
+                  "ascendantes",
+                  "descendantes"
+                ]
+              },
+              "premiere_offre": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "pas_offre": {
+                "description": "Cette valeur doit être un multiple de 500.",
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "multipleOf": 500
+              },
+              "date_fin": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "frais_acte": {
+                "type": "number",
+                "nullable": true
+              },
+              "frais_pub": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "nullable": true,
+                "deprecated": true
+              }
+            },
+            "required": [
+              "systeme_encheres",
+              "premiere_offre",
+              "pas_offre",
+              "date_fin"
+            ]
+          }
+        ]
+      },
+      "vente_viager": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/annonce"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "bouquet_hni": {
+                "type": "number",
+                "description": "Montant du bouquet Honoraires de Négociation Inclus (HNI)."
+              },
+              "bouquet_nv": {
+                "type": "number",
+                "description": "**Retourné pour une vente en charge acquéreur.**<br>Montant du bouquet Net Vendeur (NV)."
+              },
+              "type_honoraires": {
+                "type": "string",
+                "enum": [
+                  "charge_vendeur",
+                  "charge_acquereur"
+                ]
+              },
+              "honoraires": {
+                "type": "number",
+                "nullable": true,
+                "description": "**Retourné pour une vente en charge acquéreur.**<br>Montant des honoraires de négociation."
+              },
+              "honoraires_pourcentage": {
+                "type": "number",
+                "nullable": true,
+                "description": "Pourcentage des honoraires de la vente"
+              },
+              "charges_copropriete": {
+                "type": "number",
+                "nullable": true
+              },
+              "rente": {
+                "$ref": "#/components/schemas/rente"
+              },
+              "frais_acte": {
+                "type": "number",
+                "nullable": true
+              },
+              "prix": {
+                "type": "number",
+                "deprecated": true,
+                "description": "Anciennement utilisé pour la valeur vénale, non requise. A ne plus utiliser."
+              },
+              "bouquet": {
+                "type": "number",
+                "deprecated": true,
+                "description": "Utiliser les champs `bouquet_hni` et `bouquet_nv` à la place."
+              }
+            },
+            "required": [
+              "bouquet_hni",
+              "type_honoraires",
+              "rente"
+            ]
+          }
+        ]
+      },
+      "location": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/annonce"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "loyer": {
+                "type": "number",
+                "description": "Si le bien de l'annonce est soumis à l'encadrement des loyers alors ce montant inclut le complément du loyer quelle que soit la valeur de `charges_incluses`."
+              },
+              "loyer_periodicite": {
+                "type": "string",
+                "enum": [
+                  "bimensuelle",
+                  "mensuelle",
+                  "trimestrielle",
+                  "semestrielle",
+                  "annuelle"
+                ],
+                "description": "Périodicité du loyer et des charges."
+              },
+              "charges_incluses": {
+                "type": "boolean"
+              },
+              "montant_charges": {
+                "type": "number",
+                "nullable": true
+              },
+              "encadrement_loyer": {
+                "nullable": true,
+                "description": "**Retourné si le bien de l'annonce est situé dans une « zone soumise à l'encadrement des loyers »**<br>Voir https://www.service-public.fr/particuliers/vosdroits/F1314 pour plus d'informations.",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/encadrement_loyer"
+                  }
+                ]
+              },
+              "montant_etat_lieux": {
+                "type": "number",
+                "nullable": true
+              },
+              "meuble": {
+                "type": "boolean",
+                "nullable": true
+              },
+              "montant_depot_garantie": {
+                "type": "number",
+                "nullable": true
+              },
+              "date_disponibilite": {
+                "type": "string",
+                "format": "date",
+                "nullable": true
+              }
+            },
+            "required": [
+              "loyer",
+              "loyer_periodicite",
+              "charges_incluses"
+            ]
+          }
+        ]
+      },
+      "contact": {
+        "type": "object",
+        "properties": {
+          "nom": {
+            "type": "string"
+          },
+          "telephone": {
+            "type": "string",
+            "description": "Le format du numéro de téléphone doit être en `e164`",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "nom"
+        ]
+      },
+      "bien": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "nature"
+        },
+        "properties": {
+          "nature_designation": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "Précision de la nature du bien (exemples: Villa, Terrain de loisirs)"
+          },
+          "stationnement": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "exposition": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "nord",
+              "nord-est",
+              "est",
+              "sud-est",
+              "sud",
+              "sud-ouest",
+              "ouest",
+              "nord-ouest"
+            ]
+          },
+          "accessibilite": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/accessibilite"
+              }
+            ]
+          },
+          "coordonnees_gps": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/coordonnees_gps"
+              }
+            ]
+          },
+          "emplacement": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/emplacement"
+              }
+            ]
+          },
+          "situation_locative": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/situation_locative"
+              }
+            ]
+          },
+          "commune": {
+            "$ref": "#/components/schemas/commune"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/photo"
+            },
+            "readOnly": true
+          },
+          "nature": {
+            "type": "string",
+            "enum": [
+              "maison",
+              "immeuble",
+              "appartement",
+              "garage",
+              "terrain",
+              "autre"
+            ]
+          }
+        },
+        "required": [
+          "nature",
+          "commune"
+        ]
+      },
+      "appartement": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "$ref": "#/components/schemas/batiment"
+          },
+          {
+            "$ref": "#/components/schemas/habitable"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "ascenseur": {
+                "type": "boolean",
+                "nullable": true
+              }
+            },
+            "required": [
+              "surface_habitable"
+            ]
+          }
+        ]
+      },
+      "garage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "$ref": "#/components/schemas/batiment"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "surface": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "surface"
+            ]
+          }
+        ]
+      },
+      "immeuble": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "$ref": "#/components/schemas/batiment"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "surface_plancher": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "surface_plancher"
+            ]
+          }
+        ]
+      },
+      "maison": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "$ref": "#/components/schemas/batiment"
+          },
+          {
+            "$ref": "#/components/schemas/habitable"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "surface_terrain": {
+                "type": "number",
+                "nullable": true
+              }
+            },
+            "required": [
+              "surface_habitable"
+            ]
+          }
+        ]
+      },
+      "terrain": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "surface": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "surface"
+            ]
+          }
+        ]
+      },
+      "autre": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/bien"
+          },
+          {
+            "$ref": "#/components/schemas/batiment"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "surface": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "surface"
+            ]
+          }
+        ]
+      },
+      "accessibilite": {
+        "type": "object",
+        "properties": {
+          "access_pmr": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "coordonnees_gps": {
+        "description": "Coordonnées GPS (WGS 84) du bien",
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
+      "emplacement": {
+        "type": "object",
+        "properties": {
+          "adresse": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "situation_locative": {
+        "type": "object",
+        "properties": {
+          "occupe": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "libre",
+              "loue"
+            ]
+          }
+        }
+      },
+      "commune": {
+        "type": "object",
+        "properties": {
+          "code_insee": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5
+          },
+          "code_postal": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5
+          },
+          "libelle": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code_insee",
+          "code_postal",
+          "libelle"
+        ]
+      },
+      "photo": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 0,
+            "readOnly": true
+          },
+          "href": {
+            "type": "string",
+            "format": "uri",
+            "readOnly": true,
+            "description": "URL signée vers la photo. L'URL est valide 90 minutes."
+          }
+        }
+      },
+      "performance_energetique": {
+        "type": "object",
+        "properties": {
+          "date_diagnostic": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "dpe_value": {
+            "type": "integer",
+            "nullable": true
+          },
+          "dpe_classe": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I"
+            ]
+          },
+          "ges_value": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ges_classe": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I"
+            ]
+          },
+          "estimation_couts": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/estimation_couts"
+              }
+            ]
+          }
+        }
+      },
+      "estimation_couts": {
+        "type": "object",
+        "properties": {
+          "cout_min": {
+            "type": "integer"
+          },
+          "cout_max": {
+            "type": "integer"
+          },
+          "annee_reference": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 4
+          }
+        }
+      },
+      "encadrement_loyer": {
+        "type": "object",
+        "properties": {
+          "loyer_reference_majore": {
+            "type": "number",
+            "description": "Loyer de référence majoré."
+          },
+          "loyer_base": {
+            "type": "number",
+            "description": "Loyer de base (hors charges)."
+          },
+          "loyer_complement": {
+            "type": "number",
+            "description": "Complément du loyer."
+          }
+        },
+        "required": [
+          "loyer_reference_majore",
+          "loyer_base"
+        ]
+      },
+      "batiment": {
+        "type": "object",
+        "properties": {
+          "etat": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "neuf",
+              "bon",
+              "a_rafraichir",
+              "a_renover"
+            ]
+          },
+          "performance_energetique": {
+            "$ref": "#/components/schemas/performance_energetique"
+          }
+        }
+      },
+      "rente": {
+        "type": "object",
+        "properties": {
+          "montant": {
+            "type": "number"
+          },
+          "periodicite": {
+            "type": "string",
+            "enum": [
+              "mensuelle",
+              "bimensuelle",
+              "trimestrielle",
+              "semestrielle",
+              "annuelle"
+            ]
+          }
+        },
+        "required": [
+          "montant",
+          "periodicite"
+        ]
+      },
+      "habitable": {
+        "type": "object",
+        "properties": {
+          "nb_pieces": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1
+          },
+          "nb_chambres": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0
+          },
+          "nb_sdb": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Nombre de salles de bain (contenant une baignoire)"
+          },
+          "nb_salles_eau": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Nombre de salles d'eau (contenant une douche)"
+          },
+          "nb_niveaux": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1
+          },
+          "balcon": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "terrasse": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "cave": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "cuisine": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "piscine": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "surface_habitable": {
+            "type": "number"
+          },
+          "surface_carrez": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "description": "Message décrivant l'erreur survenue.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "collection": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "page",
+          "pages",
+          "total",
+          "limit"
+        ]
+      },
+      "offices_collection": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/collection"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/office"
+                }
+              }
+            },
+            "required": [
+              "results"
+            ]
+          }
+        ]
+      },
+      "annonces_collection": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/collection"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/annonce"
+                }
+              }
+            },
+            "required": [
+              "results"
+            ]
+          }
+        ]
+      }
+    },
+    "parameters": {
+      "page": {
+        "in": "query",
+        "name": "page",
+        "schema": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "default": 100,
+          "minimum": 1,
+          "maximum": 100,
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "bad_request": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "AUTH-TOKEN": {
+        "name": "AUTH-TOKEN",
+        "type": "apiKey",
+        "in": "header"
+      }
+    }
+  }
+}
