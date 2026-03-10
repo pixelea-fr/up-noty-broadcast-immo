@@ -4,6 +4,19 @@ class Noty_Shortcode {
     public function __construct() {
         add_shortcode( 'noty_annonces', array( $this, 'render_annonces' ) );
         add_shortcode( 'noty_annonce', array( $this, 'render_annonce' ) );
+        add_filter( 'render_block', array( $this, 'render_block_shortcodes' ), 9, 2 );
+    }
+
+    public function render_block_shortcodes( $block_content, $block ) {
+        if ( ! is_string( $block_content ) || $block_content === '' ) {
+            return $block_content;
+        }
+
+        if ( strpos( $block_content, '[noty_annonce' ) === false && strpos( $block_content, '[noty_annonces' ) === false ) {
+            return $block_content;
+        }
+
+        return do_shortcode( $block_content );
     }
 
     private function locate_template( $relative_path ) {
@@ -137,9 +150,12 @@ class Noty_Shortcode {
         $atts = shortcode_atts( array(
             'id' => 0,
             'uuid' => '',
+            'template' => 'single',
         ), $atts );
 
         $post_id = (int) $atts['id'];
+
+        // Si UUID fourni, chercher par UUID
         if ( $post_id <= 0 && is_string( $atts['uuid'] ) && $atts['uuid'] !== '' ) {
             $posts = get_posts( array(
                 'post_type' => 'noty_annonce',
@@ -161,8 +177,36 @@ class Noty_Shortcode {
             }
         }
 
+        // Si toujours pas d'ID, essayer de récupérer depuis le contexte de la boucle
         if ( $post_id <= 0 ) {
+            // Méthode 1: get_the_ID() (fonctionne dans les query loops standard)
             $post_id = get_the_ID();
+
+            // Méthode 2: depuis get_post() (global post)
+            if ( ! $post_id ) {
+                $current = get_post();
+                if ( $current instanceof WP_Post ) {
+                    $post_id = (int) $current->ID;
+                }
+            }
+
+            // Méthode 3: depuis le post global (fallback)
+            if ( ! $post_id && isset( $GLOBALS['post'] ) && is_object( $GLOBALS['post'] ) ) {
+                $post_id = (int) $GLOBALS['post']->ID;
+            }
+
+            // Méthode 4: depuis wp_query current post
+            if ( ! $post_id && isset( $GLOBALS['wp_query'] ) && isset( $GLOBALS['wp_query']->post ) && is_object( $GLOBALS['wp_query']->post ) ) {
+                $post_id = (int) $GLOBALS['wp_query']->post->ID;
+            }
+
+            // Méthode 5: depuis wp_query->posts[current_post] (utile dans certains rendus de Query Loop)
+            if ( ! $post_id && isset( $GLOBALS['wp_query'] ) && $GLOBALS['wp_query'] instanceof WP_Query ) {
+                $idx = (int) $GLOBALS['wp_query']->current_post;
+                if ( isset( $GLOBALS['wp_query']->posts[ $idx ] ) && $GLOBALS['wp_query']->posts[ $idx ] instanceof WP_Post ) {
+                    $post_id = (int) $GLOBALS['wp_query']->posts[ $idx ]->ID;
+                }
+            }
         }
 
         if ( ! $post_id ) {
@@ -175,7 +219,12 @@ class Noty_Shortcode {
         }
         $rendering[ $render_key ] = true;
 
-        $template = $this->get_template_for_single( $post_id );
+        $template_type = sanitize_text_field( $atts['template'] );
+        if ( $template_type === 'card' ) {
+            $template = $this->get_template_for_card( $post_id );
+        } else {
+            $template = $this->get_template_for_single( $post_id );
+        }
         $html = $this->render_template( $template, array( 'post_id' => $post_id ) );
 
         unset( $rendering[ $render_key ] );

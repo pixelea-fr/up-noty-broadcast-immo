@@ -35,7 +35,8 @@ $transactions = wp_get_post_terms( $post_id, 'noty_transaction' );
 $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions ) ) ? $transactions[0]->name : '';
 
 ?>
-<div class="up-immo-card">
+<div class="up-immo-card" data-postid="<?php echo $post_id; ?>">
+
     <?php if ( has_post_thumbnail( $post_id ) ) : ?>
         <div class="up-immo-card__thumb">
             <?php echo get_the_post_thumbnail( $post_id, 'medium', array( 'class' => 'up-immo-card__image' ) ); ?>
@@ -43,6 +44,15 @@ $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions )
                 <span class="up-immo-card__badge">
                     <?php echo esc_html( $nature_name ); ?>
                 </span>
+            <?php endif; ?>
+        </div>
+ <?php else: ?>
+        <div class="up-immo-card__thumb">
+            <img src="<?php echo esc_url( plugins_url( 'assets/images/no-image.png',"up-noty-broadcast-immo/up-noty-broadcast-immo.php" ) ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="up-immo-card__image">
+            <?php if ( $nature_name !== '' ) : ?>
+                <span class="up-immo-card__badge">
+                    <?php echo esc_html( $nature_name ); ?>
+                </span>  
             <?php endif; ?>
         </div>
     <?php endif; ?>

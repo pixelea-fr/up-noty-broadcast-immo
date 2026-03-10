@@ -124,6 +124,61 @@ class Noty_Admin {
         <div class="wrap">
             <h1>Mode d'emploi</h1>
 
+            <h2>Types de contenu et taxonomies</h2>
+            
+            <h3>Custom Post Types (CPT)</h3>
+            <table class="widefat striped" style="max-width:920px;">
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">Nom</th>
+                        <th style="width: 180px;">Slug</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Annonces Noty</strong></td>
+                        <td><code>noty_annonce</code></td>
+                        <td>Contenu principal pour les annonces immobilières synchronisées avec Noty</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Taxonomies</h3>
+            <table class="widefat striped" style="max-width:920px;">
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">Nom</th>
+                        <th style="width: 180px;">Slug</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Nature du bien</strong></td>
+                        <td><code>noty_nature</code></td>
+                        <td>Type de bien immobilier (Maison, Appartement, Studio, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type de transaction</strong></td>
+                        <td><code>noty_transaction</code></td>
+                        <td>Type de transaction (Vente, Location, Viager, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ville</strong></td>
+                        <td><code>noty_ville</code></td>
+                        <td>Ville ou commune où se situe le bien</td>
+                    </tr>
+                    <tr>
+                        <td><strong>État du bien</strong></td>
+                        <td><code>noty_etat</code></td>
+                        <td>État général du bâtiment (Neuf, Bon état, Rénovation, etc.)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr>
+
             <h2>Shortcodes disponibles</h2>
 
             <h3><code>[noty_annonces]</code></h3>
