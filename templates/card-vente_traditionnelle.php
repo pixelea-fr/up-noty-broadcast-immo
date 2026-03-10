@@ -6,7 +6,7 @@ if ( ! isset( $post_id ) ) {
 
 $post_id = (int) $post_id;
 
-$prix = get_post_meta( $post_id, 'up_prix', true );
+ $prix = get_post_meta( $post_id, 'up_prix', true );
 if ( $prix === '' ) {
     $prix = get_post_meta( $post_id, '_noty_prix', true );
 }
@@ -32,9 +32,9 @@ $natures = wp_get_post_terms( $post_id, 'noty_nature' );
 $nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0]->name : '';
 
 ?>
-<div class="up-immo-card up-immo-card--vente-traditionnelle" data-postid="<?php echo $post_id; ?>">
+<div class="up-immo-card up-immo-card--vente-traditionnelle" data-postid="<?php echo $post_id; ?>" data-templates="card-vente_traditionnelle">
     <?php if ( has_post_thumbnail( $post_id ) ) : ?>
-        <div class="up-immo-card__thumb">
+        <div class="up-immo-card__header">
             <?php echo get_the_post_thumbnail( $post_id, 'medium', array( 'class' => 'up-immo-card__image' ) ); ?>
             <?php if ( $nature_name !== '' ) : ?>
                 <span class="up-immo-card__badge">
@@ -43,7 +43,7 @@ $nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0
             <?php endif; ?>
         </div>
        <?php else: ?>
-        <div class="up-immo-card__thumb">
+        <div class="up-immo-card__header">
             <img src="<?php echo esc_url( plugins_url( 'assets/images/no-image.png',"up-noty-broadcast-immo/up-noty-broadcast-immo.php" ) ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="up-immo-card__image">
             <?php if ( $nature_name !== '' ) : ?>
                 <span class="up-immo-card__badge">
@@ -52,7 +52,10 @@ $nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0
             <?php endif; ?>
         </div>
     <?php endif; ?>
-
+    <div class="up-immo-card__content">
+                <div class="up-immo-card__price-container"><span class="up-immo-card__price">
+            <?php echo $prix !== '' ? esc_html( number_format( (float) $prix, 0, ',', ' ' ) . ' €' ) : 'Prix sur demande'; ?>
+        </span></div> 
     <h3 class="up-immo-card__title">
         <?php echo $post_id; ?>
         <a class="up-immo-card__title-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"><?php echo esc_html( get_the_title( $post_id ) ); ?></a>
@@ -66,9 +69,7 @@ $nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0
     <?php endif; ?>
 
     <div class="up-immo-card__footer">
-        <span class="up-immo-card__price">
-            <?php echo $prix !== '' ? esc_html( number_format( (float) $prix, 0, ',', ' ' ) . ' €' ) : 'Prix sur demande'; ?>
-        </span>
+
         <span class="up-immo-card__meta">
             <?php
             $parts = array();
@@ -81,5 +82,9 @@ $nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0
             echo esc_html( implode( ' | ', $parts ) );
             ?>
         </span>
+    </div>
+                <a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="up-immo-card__btn">
+           En savoir plus 
+        </a>
     </div>
 </div>

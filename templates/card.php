@@ -35,10 +35,10 @@ $transactions = wp_get_post_terms( $post_id, 'noty_transaction' );
 $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions ) ) ? $transactions[0]->name : '';
 
 ?>
-<div class="up-immo-card" data-postid="<?php echo $post_id; ?>">
+<div class="up-immo-card" data-postid="<?php echo $post_id; ?>" data-templates="card">
 
     <?php if ( has_post_thumbnail( $post_id ) ) : ?>
-        <div class="up-immo-card__thumb">
+        <div class="up-immo-card__header">
             <?php echo get_the_post_thumbnail( $post_id, 'medium', array( 'class' => 'up-immo-card__image' ) ); ?>
             <?php if ( $nature_name !== '' ) : ?>
                 <span class="up-immo-card__badge">
@@ -47,7 +47,7 @@ $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions )
             <?php endif; ?>
         </div>
  <?php else: ?>
-        <div class="up-immo-card__thumb">
+        <div class="up-immo-card__header">
             <img src="<?php echo esc_url( plugins_url( 'assets/images/no-image.png',"up-noty-broadcast-immo/up-noty-broadcast-immo.php" ) ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="up-immo-card__image">
             <?php if ( $nature_name !== '' ) : ?>
                 <span class="up-immo-card__badge">
@@ -56,39 +56,44 @@ $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions )
             <?php endif; ?>
         </div>
     <?php endif; ?>
-
-    <h3 class="up-immo-card__title">
-        <a class="up-immo-card__title-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"><?php echo esc_html( get_the_title( $post_id ) ); ?></a>
-    </h3>
-
-    <?php if ( $ville_name !== '' ) : ?>
-        <p class="up-immo-card__city">
-            <span class="dashicons dashicons-location"></span>
-            <?php echo esc_html( $ville_name ); ?>
-        </p>
-    <?php endif; ?>
-
-    <?php if ( $transaction_name !== '' ) : ?>
-        <p class="up-immo-card__transaction">
-            <?php echo esc_html( $transaction_name ); ?>
-        </p>
-    <?php endif; ?>
-
-    <div class="up-immo-card__footer">
-        <span class="up-immo-card__price">
+    <div class="up-immo-card__content">
+                <div class="up-immo-card__price-container"><span class="up-immo-card__price">
             <?php echo $prix !== '' ? esc_html( number_format( (float) $prix, 0, ',', ' ' ) . ' €' ) : 'Prix sur demande'; ?>
-        </span>
-        <span class="up-immo-card__meta">
-            <?php
-            $parts = array();
-            if ( $surface !== '' ) {
-                $parts[] = $surface . ' m²';
-            }
-            if ( $pieces !== '' ) {
-                $parts[] = $pieces . ' p.';
-            }
-            echo esc_html( implode( ' | ', $parts ) );
-            ?>
-        </span>
-    </div>
+        </span></div> 
+        <h3 class="up-immo-card__title">
+            <a class="up-immo-card__title-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"><?php echo esc_html( get_the_title( $post_id ) ); ?></a>
+        </h3>
+
+        <?php if ( $ville_name !== '' ) : ?>
+            <p class="up-immo-card__city">
+                <span class="dashicons dashicons-location"></span>
+                <?php echo esc_html( $ville_name ); ?>
+            </p>
+        <?php endif; ?>
+
+        <?php if ( $transaction_name !== '' ) : ?>
+            <p class="up-immo-card__transaction">
+                <?php echo esc_html( $transaction_name ); ?>
+            </p>
+        <?php endif; ?>
+
+      
+
+            <span class="up-immo-card__meta">
+                <?php
+                $parts = array();
+                if ( $surface !== '' ) {
+                    $parts[] = $surface . ' m²';
+                }
+                if ( $pieces !== '' ) {
+                    $parts[] = $pieces . ' p.';
+                }
+                echo esc_html( implode( ' | ', $parts ) );
+                ?>
+            </span>
+            <a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="up-immo-card__btn">
+           En savoir plus 
+        </a>
+        </div>
+
 </div>
