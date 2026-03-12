@@ -1,0 +1,383 @@
+<?php
+
+class Noty_Annonce {
+    public $id = 0;
+    public $titre = '';
+    public $lien = '';
+
+    public $uuid = '';
+    public $reference = '';
+    public $last_sync = '';
+
+    public $photos = array();
+
+    public $raw = null;
+
+    public $ids = '';
+
+    public $bien;
+
+    public $office;
+
+    public $contact;
+
+    public function __construct() {
+        $this->bien = new Noty_Bien();
+        $this->office = (object) array(
+            'raison_sociale' => '',
+            'crpcen' => '',
+        );
+        $this->contact = (object) array(
+            'nom' => '',
+            'telephone' => '',
+            'email' => '',
+        );
+    }
+
+    public static function from_post_id( $post_id ) {
+        $post_id = (int) $post_id;
+        if ( $post_id <= 0 ) {
+            return null;
+        }
+
+        $self = new self();
+        $self->id = $post_id;
+        $self->titre = (string) get_the_title( $post_id );
+      
+        $self->lien = (string) get_permalink( $post_id );
+
+        $self->uuid = (string) self::get_meta_first( $post_id, array( 'up_uuid', '_noty_uuid' ), '' );
+        $self->reference = (string) self::get_meta_first( $post_id, array( 'up_reference', '_noty_reference' ), '' );
+        $self->last_sync = (string) self::get_meta_first( $post_id, array( 'up_last_sync', '_noty_last_sync' ), '' );
+
+        $raw = self::get_meta_first( $post_id, array( 'up_raw', '_noty_raw' ), '' );
+        $raw_data = self::json_decode_if_needed( $raw );
+        $self->raw = $raw_data;
+
+        $photo_ids = get_post_meta( $post_id, 'up_photo_ids', true );
+        if ( ! is_array( $photo_ids ) || empty( $photo_ids ) ) {
+            $photo_ids = get_post_meta( $post_id, '_noty_photo_ids', true );
+        }
+        $self->photos = is_array( $photo_ids ) ? array_values( array_filter( array_map( 'intval', $photo_ids ) ) ) : array();
+
+        $self->bien->nature = self::get_term_name( $post_id, 'noty_nature' );
+        $self->bien->ville = self::get_term_name( $post_id, 'noty_ville' );
+        $self->bien->transaction = self::get_term_name( $post_id, 'noty_transaction' );
+
+        $self->bien->code_postal = (string) self::get_meta_first( $post_id, array( 'up_code_postal', '_noty_code_postal' ), '' );
+
+        $self->bien->surface = (string) self::get_meta_first( $post_id, array( 'up_surface_habitable', '_noty_surface_habitable', 'up_surface', '_noty_surface' ), '' );
+        $self->bien->pieces = (string) self::get_meta_first( $post_id, array( 'up_nb_pieces', '_noty_nb_pieces' ), '' );
+        $self->bien->chambres = (string) self::get_meta_first( $post_id, array( 'up_nb_chambres', '_noty_nb_chambres' ), '' );
+
+        $self->bien->surface_string = $self->bien->surface !== '' ? ( $self->bien->surface . ' m²' ) : '';
+
+        $prix_num = self::get_meta_first( $post_id, array( 'up_prix', '_noty_prix' ), '' );
+        $loyer_num = self::get_meta_first( $post_id, array( 'up_loyer', '_noty_loyer' ), '' );
+
+        $self->bien->prix = self::format_eur( $prix_num );
+        $self->bien->loyer = self::format_eur( $loyer_num );
+        $self->bien->loyer_periodicite = (string) self::get_meta_first( $post_id, array( 'up_loyer_periodicite', '_noty_loyer_periodicite' ), '' );
+
+        $self->bien->charges_incluses = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_charges_incluses', '_noty_charges_incluses' ), '' ) );
+        $self->bien->montant_charges = self::format_eur( self::get_meta_first( $post_id, array( 'up_montant_charges', '_noty_montant_charges' ), '' ) );
+        $self->bien->montant_etat_lieux = self::format_eur( self::get_meta_first( $post_id, array( 'up_montant_etat_lieux', '_noty_montant_etat_lieux' ), '' ) );
+        $self->bien->meuble = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_meuble', '_noty_meuble' ), '' ) );
+        $self->bien->montant_depot_garantie = self::format_eur( self::get_meta_first( $post_id, array( 'up_montant_depot_garantie', '_noty_montant_depot_garantie' ), '' ) );
+
+        $self->bien->transaction_type = (string) self::get_meta_first( $post_id, array( 'up_transaction_type', '_noty_transaction_type' ), '' );
+
+        $self->bien->type_honoraires = (string) self::get_meta_first( $post_id, array( 'up_type_honoraires', '_noty_type_honoraires' ), '' );
+        $self->bien->honoraires = self::format_eur( self::get_meta_first( $post_id, array( 'up_honoraires', '_noty_honoraires' ), '' ) );
+        $self->bien->honoraires_pourcentage = (string) self::get_meta_first( $post_id, array( 'up_honoraires_pourcentage', '_noty_honoraires_pourcentage' ), '' );
+        $self->bien->charges_copropriete = self::format_eur( self::get_meta_first( $post_id, array( 'up_charges_copropriete', '_noty_charges_copropriete' ), '' ) );
+        $self->bien->frais_acte = self::format_eur( self::get_meta_first( $post_id, array( 'up_frais_acte', '_noty_frais_acte' ), '' ) );
+
+        $self->bien->bouquet = self::format_eur( self::get_meta_first( $post_id, array( 'up_bouquet', '_noty_bouquet' ), '' ) );
+        $self->bien->bouquet_hni = self::format_eur( self::get_meta_first( $post_id, array( 'up_bouquet_hni', '_noty_bouquet_hni' ), '' ) );
+        $self->bien->bouquet_nv = self::format_eur( self::get_meta_first( $post_id, array( 'up_bouquet_nv', '_noty_bouquet_nv' ), '' ) );
+        $self->bien->rente = self::json_decode_if_needed( self::get_meta_first( $post_id, array( 'up_rente', '_noty_rente' ), '' ) );
+
+        $self->bien->dpe_classe = (string) self::get_meta_first( $post_id, array( 'up_dpe_classe', '_noty_dpe_classe' ), '' );
+        $self->bien->dpe_value = (string) self::get_meta_first( $post_id, array( 'up_dpe_value', '_noty_dpe_value' ), '' );
+        $self->bien->ges_classe = (string) self::get_meta_first( $post_id, array( 'up_ges_classe', '_noty_ges_classe' ), '' );
+        $self->bien->ges_value = (string) self::get_meta_first( $post_id, array( 'up_ges_value', '_noty_ges_value' ), '' );
+
+        $dpe_classe = strtolower( trim( (string) $self->bien->dpe_classe ) );
+        $ges_classe = strtolower( trim( (string) $self->bien->ges_classe ) );
+
+        $dpe_value = trim( (string) $self->bien->dpe_value );
+        $ges_value = trim( (string) $self->bien->ges_value );
+
+        if ( $dpe_classe !== '' ) {
+            $self->bien->dpe = self::build_outils_immo_label(
+                'dpe',
+                $dpe_classe,
+                $dpe_value,
+                array(
+                    'valeurges' => $ges_value,
+                )
+            );
+        }
+
+        if ( $ges_classe !== '' ) {
+            $self->bien->ges = self::build_outils_immo_label( 'ges', $ges_classe, $ges_value );
+        }
+
+        $self->bien->gse = $self->bien->ges;
+
+        if ( is_array( $raw_data ) ) {
+            if ( $self->bien->transaction_type === '' && isset( $raw_data['transaction'] ) ) {
+                if ( is_array( $raw_data['transaction'] ) ) {
+                    $self->bien->transaction_type = (string) ( $raw_data['transaction']['type'] ?? '' );
+                } elseif ( is_string( $raw_data['transaction'] ) ) {
+                    $self->bien->transaction_type = (string) $raw_data['transaction'];
+                }
+            }
+
+            if ( $self->bien->prix === '' && array_key_exists( 'prix', $raw_data ) ) {
+                $self->bien->prix = self::format_eur( $raw_data['prix'] );
+            }
+            if ( $self->bien->loyer === '' && array_key_exists( 'loyer', $raw_data ) ) {
+                $self->bien->loyer = self::format_eur( $raw_data['loyer'] );
+            }
+
+            if ( isset( $raw_data['office'] ) && is_array( $raw_data['office'] ) ) {
+                $self->office->raison_sociale = (string) ( $raw_data['office']['raison_sociale'] ?? '' );
+                $self->office->crpcen = (string) ( $raw_data['office']['crpcen'] ?? '' );
+            }
+            if ( isset( $raw_data['contact'] ) && is_array( $raw_data['contact'] ) ) {
+                $self->contact->nom = (string) ( $raw_data['contact']['nom'] ?? '' );
+                $self->contact->telephone = (string) ( $raw_data['contact']['telephone'] ?? '' );
+                $self->contact->email = (string) ( $raw_data['contact']['email'] ?? '' );
+            }
+        }
+
+        $self->bien->transaction_string = '';
+        if ( $self->bien->transaction_type === 'location' ) {
+            $self->bien->transaction_string = 'à louer';
+        } elseif ( $self->bien->transaction_type === 'vente_traditionnelle' ) {
+            $self->bien->transaction_string = 'à vendre';
+        } elseif ( $self->bien->transaction_type === 'vente_viager' ) {
+            $self->bien->transaction_string = 'à vendre (en viager)';
+        }
+
+        $self->bien->prix_ou_loyer = $self->bien->loyer !== '' ? $self->bien->loyer : $self->bien->prix;
+
+        $self->bien->localisation = trim( $self->bien->code_postal . ' ' . $self->bien->ville );
+
+        $car = array();
+        if ( $self->bien->surface !== '' ) {
+            $car[] = $self->bien->surface . ' m²';
+        }
+        if ( $self->bien->pieces !== '' ) {
+            $car[] = $self->bien->pieces . ' pièces';
+        }
+        if ( $self->bien->chambres !== '' ) {
+            $car[] = $self->bien->chambres . ' chambres';
+        }
+        $self->bien->caracteristiques = $car ? implode( ' · ', $car ) : '—';
+
+        $subtitle = array();
+        if ( $self->bien->nature !== '' ) {
+            $subtitle[] = $self->bien->nature;
+        }
+        if ( $self->bien->ville !== '' ) {
+            $subtitle[] = $self->bien->ville;
+        }
+        if ( $self->bien->transaction_type !== '' ) {
+            $subtitle[] = $self->bien->transaction_type;
+        }
+        $self->bien->subtitle = $subtitle ? implode( ' · ', $subtitle ) : '';
+
+        $ids = array();
+        if ( $self->reference !== '' ) {
+            $ids[] = 'Réf. ' . $self->reference;
+        }
+        if ( $self->uuid !== '' ) {
+            $ids[] = 'UUID ' . $self->uuid;
+        }
+        if ( $self->last_sync !== '' ) {
+            $ids[] = 'Sync ' . $self->last_sync;
+        }
+        $self->ids = $ids ? implode( ' · ', $ids ) : '';
+
+        $charges = array();
+        if ( $self->bien->charges_incluses === 'Oui' ) {
+            $charges[] = 'Charges incluses';
+        } elseif ( $self->bien->charges_incluses === 'Non' ) {
+            $charges[] = 'Charges non incluses';
+        }
+        if ( $self->bien->montant_charges !== '' ) {
+            $charges[] = 'Charges: ' . $self->bien->montant_charges;
+        }
+        $self->bien->charges_resume = $charges ? implode( ' · ', $charges ) : '';
+
+        $self->bien->details = self::build_details( $self->bien );
+        $self->titre = ucfirst( $self->bien->nature ) . " " . $self->bien->surface_string . " " . $self->bien->transaction_string . " à " . $self->bien->ville;
+        return $self;
+    }
+
+    private static function build_outils_immo_label( $type, $lettre, $valeur, $extra_args = array() ) {
+        $type = (string) $type;
+        $lettre = (string) $lettre;
+        $valeur = (string) $valeur;
+        $extra_args = is_array( $extra_args ) ? $extra_args : array();
+
+        $modele = '2021';
+        if ( $valeur === '' || ! is_numeric( $valeur ) ) {
+            $modele = 'light';
+        }
+
+        $args = array(
+            'type' => $type,
+            'modele' => $modele,
+            'lettre' => $lettre,
+            'valeur' => $modele === 'light' ? '' : (string) (int) $valeur,
+        );
+
+        if ( $type === 'dpe' && $modele === '2021' ) {
+            if ( isset( $extra_args['valeurges'] ) && $extra_args['valeurges'] !== '' && is_numeric( $extra_args['valeurges'] ) ) {
+                $args['valeurges'] = (string) (int) $extra_args['valeurges'];
+            }
+        }
+
+        $url = add_query_arg( $args, 'https://www.outils.immo/outils-immo.php' );
+
+        return (object) array(
+            'type' => $type,
+            'modele' => $modele,
+            'lettre' => $lettre,
+            'valeur' => $valeur,
+            'image_url' => esc_url_raw( $url ),
+        );
+    }
+
+    public static function order_items_in_columns( $items, $columns = 2 ) {
+        if ( ! is_array( $items ) ) {
+            return array();
+        }
+
+        $columns = (int) $columns;
+        if ( $columns <= 1 ) {
+            return array_values( $items );
+        }
+
+        $items = array_values( $items );
+        $n = count( $items );
+        if ( $n === 0 ) {
+            return array();
+        }
+
+        $rows = (int) ceil( $n / $columns );
+        $ordered = array();
+
+        for ( $r = 0; $r < $rows; $r++ ) {
+            for ( $c = 0; $c < $columns; $c++ ) {
+                $i = $r + ( $c * $rows );
+                if ( isset( $items[ $i ] ) ) {
+                    $ordered[] = $items[ $i ];
+                }
+            }
+        }
+
+        return $ordered;
+    }
+
+    private static function build_details( Noty_Bien $bien ) {
+        $details = array();
+
+        $add = function( $meta, $label, $value ) use ( &$details ) {
+            if ( $value === '' || $value === null ) {
+                return;
+            }
+            $details[] = array(
+                'meta'  => (string) $meta,
+                'label' => (string) $label,
+                'value' => $value,
+            );
+        };
+
+        $add( 'transaction_type', 'Transaction', $bien->transaction_type );
+        $add( 'type_honoraires', 'Type honoraires', $bien->type_honoraires );
+        $add( 'honoraires', 'Honoraires', $bien->honoraires );
+        $add( 'honoraires_pourcentage', 'Honoraires (%)', $bien->honoraires_pourcentage );
+        $add( 'charges_copropriete', 'Charges copropriété', $bien->charges_copropriete );
+        $add( 'frais_acte', 'Frais d\'acte', $bien->frais_acte );
+        $add( 'bouquet', 'Bouquet', $bien->bouquet );
+        $add( 'bouquet_hni', 'Bouquet HNI', $bien->bouquet_hni );
+        $add( 'bouquet_nv', 'Bouquet NV', $bien->bouquet_nv );
+
+        if ( is_array( $bien->rente ) ) {
+            $m = isset( $bien->rente['montant'] ) ? $bien->rente['montant'] : '';
+            $p = isset( $bien->rente['periodicite'] ) ? $bien->rente['periodicite'] : '';
+            if ( $m !== '' ) {
+                $add( 'rente', 'Rente', number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' ) );
+            }
+        }
+
+        if ( $bien->loyer !== '' ) {
+            if ( $bien->charges_incluses !== '' ) {
+                $add( 'charges_incluses', 'Charges incluses', $bien->charges_incluses );
+            }
+            if ( $bien->montant_charges !== '' ) {
+                $add( 'montant_charges', 'Montant charges', $bien->montant_charges );
+            }
+            if ( $bien->montant_etat_lieux !== '' ) {
+                $add( 'montant_etat_lieux', 'État des lieux', $bien->montant_etat_lieux );
+            }
+            if ( $bien->meuble !== '' ) {
+                $add( 'meuble', 'Meublé', $bien->meuble );
+            }
+            if ( $bien->montant_depot_garantie !== '' ) {
+                $add( 'montant_depot_garantie', 'Dépôt de garantie', $bien->montant_depot_garantie );
+            }
+        }
+
+        return $details;
+    }
+
+    private static function get_meta_first( $post_id, $keys, $default = '' ) {
+        $keys = is_array( $keys ) ? $keys : array( $keys );
+        foreach ( $keys as $key ) {
+            $val = get_post_meta( $post_id, $key, true );
+            if ( $val !== '' && $val !== null ) {
+                return $val;
+            }
+        }
+        return $default;
+    }
+
+    private static function json_decode_if_needed( $value ) {
+        if ( is_array( $value ) ) {
+            return $value;
+        }
+        if ( ! is_string( $value ) || $value === '' ) {
+            return null;
+        }
+        $decoded = json_decode( $value, true );
+        return is_array( $decoded ) ? $decoded : null;
+    }
+
+    private static function get_term_name( $post_id, $taxonomy ) {
+        $terms = wp_get_post_terms( $post_id, $taxonomy );
+        if ( is_wp_error( $terms ) || empty( $terms ) ) {
+            return '';
+        }
+        return (string) $terms[0]->name;
+    }
+
+    private static function format_eur( $value ) {
+        if ( $value === '' || $value === null ) {
+            return '';
+        }
+        return number_format( (float) $value, 0, ',', ' ' ) . ' €';
+    }
+
+    private static function format_bool_oui_non( $value ) {
+        if ( $value === '' || $value === null ) {
+            return '';
+        }
+        return ( $value === '1' || $value === 1 || $value === true || $value === 'true' ) ? 'Oui' : 'Non';
+    }
+}

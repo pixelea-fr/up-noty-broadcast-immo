@@ -20,7 +20,10 @@ require_once NOTY_PLUGIN_DIR . 'includes/class-noty-api.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-cpt.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-sync.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-admin.php';
+require_once NOTY_PLUGIN_DIR . 'includes/class-noty-bien.php';
+require_once NOTY_PLUGIN_DIR . 'includes/class-noty-annonce.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-shortcode.php';
+require_once NOTY_PLUGIN_DIR . 'includes/meta-filters.php';
 
 function noty_broadcast_register_styles() {
     $relative = 'style.css';

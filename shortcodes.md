@@ -41,10 +41,9 @@ Affiche les appartements en vente.
 
 ### Templates utilisés
 
-Le shortcode utilise les templates suivants (dans l'ordre de priorité) :
+Le shortcode utilise le template suivant :
 
-1. `card-{transaction}.php` - Template spécifique au type de transaction (ex: `card-vente.php`)
-2. `card.php` - Template par défaut
+1. `card.php`
 
 Les templates sont cherchés dans le dossier `templates/` du plugin.
 
@@ -91,10 +90,9 @@ Affiche l'annonce avec l'UUID sous forme de card.
 
 ### Templates utilisés
 
-Le shortcode utilise les templates suivants (dans l'ordre de priorité) :
+Le shortcode utilise le template suivant :
 
-1. `single-{transaction}.php` - Template spécifique au type de transaction (ex: `single-location.php`)
-2. `single.php` - Template par défaut
+1. `single.php`
 
 Les templates sont cherchés dans le dossier `templates/` du plugin.
 

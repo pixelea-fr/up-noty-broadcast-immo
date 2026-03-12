@@ -6,33 +6,12 @@ if ( ! isset( $post_id ) ) {
 
 $post_id = (int) $post_id;
 
-$prix = get_post_meta( $post_id, 'up_prix', true );
-if ( $prix === '' ) {
-    $prix = get_post_meta( $post_id, '_noty_prix', true );
-}
-$surface = get_post_meta( $post_id, 'up_surface_habitable', true );
-if ( $surface === '' ) {
-    $surface = get_post_meta( $post_id, '_noty_surface_habitable', true );
-}
-if ( $surface === '' ) {
-    $surface = get_post_meta( $post_id, 'up_surface', true );
-}
-if ( $surface === '' ) {
-    $surface = get_post_meta( $post_id, '_noty_surface', true );
-}
-$pieces = get_post_meta( $post_id, 'up_nb_pieces', true );
-if ( $pieces === '' ) {
-    $pieces = get_post_meta( $post_id, '_noty_nb_pieces', true );
+$annonce = ( isset( $annonce ) && is_object( $annonce ) ) ? $annonce : null;
+if ( ! $annonce || ! isset( $annonce->bien ) || ! is_object( $annonce->bien ) ) {
+    return;
 }
 
-$villes = wp_get_post_terms( $post_id, 'noty_ville' );
-$ville_name = ( ! is_wp_error( $villes ) && ! empty( $villes ) ) ? $villes[0]->name : '';
-
-$natures = wp_get_post_terms( $post_id, 'noty_nature' );
-$nature_name = ( ! is_wp_error( $natures ) && ! empty( $natures ) ) ? $natures[0]->name : '';
-
-$transactions = wp_get_post_terms( $post_id, 'noty_transaction' );
-$transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions ) ) ? $transactions[0]->name : '';
+$bien = $annonce->bien;
 
 ?>
 <div class="up-immo-card" data-postid="<?php echo $post_id; ?>" data-templates="card">
@@ -40,60 +19,65 @@ $transaction_name = ( ! is_wp_error( $transactions ) && ! empty( $transactions )
     <?php if ( has_post_thumbnail( $post_id ) ) : ?>
         <div class="up-immo-card__header">
             <?php echo get_the_post_thumbnail( $post_id, 'medium', array( 'class' => 'up-immo-card__image' ) ); ?>
-            <?php if ( $nature_name !== '' ) : ?>
+            <?php if ( $bien->nature !== '' ) : ?>
                 <span class="up-immo-card__badge">
-                    <?php echo esc_html( $nature_name ); ?>
+                    <?php echo esc_html( $bien->nature ); ?>
                 </span>
             <?php endif; ?>
         </div>
  <?php else: ?>
         <div class="up-immo-card__header">
             <img src="<?php echo esc_url( plugins_url( 'assets/images/no-image.png',"up-noty-broadcast-immo/up-noty-broadcast-immo.php" ) ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="up-immo-card__image">
-            <?php if ( $nature_name !== '' ) : ?>
+            <?php if ( $bien->nature !== '' ) : ?>
                 <span class="up-immo-card__badge">
-                    <?php echo esc_html( $nature_name ); ?>
+                    <?php echo esc_html( $bien->nature ); ?>
                 </span>  
             <?php endif; ?>
         </div>
     <?php endif; ?>
     <div class="up-immo-card__content">
                 <div class="up-immo-card__price-container"><span class="up-immo-card__price">
-            <?php echo $prix !== '' ? esc_html( number_format( (float) $prix, 0, ',', ' ' ) . ' €' ) : 'Prix sur demande'; ?>
-        </span></div> 
+            <?php echo $bien->prix_ou_loyer !== '' ? esc_html( $bien->prix_ou_loyer ) : 'Prix sur demande'; ?>
+        </span>
+                <?php if ( $bien->loyer !== '' && $bien->loyer_periodicite !== '' ) : ?>
+    
+                <span><?php echo esc_html( ' (' . $bien->loyer_periodicite . ')' ); ?></span>
+ 
+        <?php endif; ?>
+    </div> 
+
+
         <h3 class="up-immo-card__title">
-            <a class="up-immo-card__title-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"><?php echo esc_html( get_the_title( $post_id ) ); ?></a>
+            <a class="up-immo-card__title-link" href="<?php echo esc_url( $annonce->lien ); ?>"><?php echo esc_html( $annonce->titre ); ?></a>
         </h3>
 
-        <?php if ( $ville_name !== '' ) : ?>
+        <?php /*if ( $bien->ville !== '' ) : ?>
             <p class="up-immo-card__city">
                 <span class="dashicons dashicons-location"></span>
-                <?php echo esc_html( $ville_name ); ?>
+                <?php echo esc_html( $bien->ville ); ?>
             </p>
-        <?php endif; ?>
+        <?php endif; */ ?>
 
-        <?php if ( $transaction_name !== '' ) : ?>
+        <?php /* if ( $bien->transaction_string !== '' || $bien->transaction !== '' ) : ?>
             <p class="up-immo-card__transaction">
-                <?php echo esc_html( $transaction_name ); ?>
+                <?php echo esc_html( $bien->transaction_string !== '' ? $bien->transaction_string : $bien->transaction ); ?>
             </p>
-        <?php endif; ?>
+        <?php endif; */ ?>
 
       
 
             <span class="up-immo-card__meta">
-                <?php
-                $parts = array();
-                if ( $surface !== '' ) {
-                    $parts[] = $surface . ' m²';
-                }
-                if ( $pieces !== '' ) {
-                    $parts[] = $pieces . ' p.';
-                }
-                echo esc_html( implode( ' | ', $parts ) );
-                ?>
+                <?php echo esc_html( $bien->caracteristiques ); ?>
             </span>
-            <a href="<?php echo esc_url( get_permalink( $post_id ) ); ?>" class="up-immo-card__btn">
+            <a href="<?php echo esc_url( $annonce->lien ); ?>" class="up-immo-card__btn">
            En savoir plus 
         </a>
         </div>
+
+        <?php if ( $bien->charges_resume !== '' ) : ?>
+            <p class="up-immo-card__charges">
+                <?php echo esc_html( $bien->charges_resume ); ?>
+            </p>
+        <?php endif; ?>
 
 </div>
