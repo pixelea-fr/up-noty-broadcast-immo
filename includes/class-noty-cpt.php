@@ -7,6 +7,11 @@ class Noty_CPT {
         add_action( 'add_meta_boxes', array( $this, 'register_metaboxes' ) );
         add_filter( 'manage_noty_annonce_posts_columns', array( $this, 'add_admin_columns' ) );
         add_action( 'manage_noty_annonce_posts_custom_column', array( $this, 'render_admin_columns' ), 10, 2 );
+
+        add_action( 'noty_transaction_add_form_fields', array( $this, 'render_noty_transaction_slug_replace_add_field' ) );
+        add_action( 'noty_transaction_edit_form_fields', array( $this, 'render_noty_transaction_slug_replace_edit_field' ) );
+        add_action( 'created_noty_transaction', array( $this, 'save_noty_transaction_slug_replace_field' ), 10, 2 );
+        add_action( 'edited_noty_transaction', array( $this, 'save_noty_transaction_slug_replace_field' ), 10, 2 );
     }
 
     public function register_post_type() {
@@ -325,5 +330,45 @@ class Noty_CPT {
             $names = wp_list_pluck( $terms, 'name' );
             echo esc_html( implode( ', ', $names ) );
         }
+    }
+
+    public function render_noty_transaction_slug_replace_add_field() {
+        echo '<div class="form-field">';
+        echo '<label for="noty_slug_replace">Slug replace</label>';
+        echo '<input type="text" name="noty_slug_replace" id="noty_slug_replace" value="">';
+        echo '<p class="description">Si vide, le plugin utilise les URLs par défaut. Sinon, ce slug remplace l\'URL pour ce terme (ex: vente-immobiliere).</p>';
+        echo '</div>';
+    }
+
+    public function render_noty_transaction_slug_replace_edit_field( $term ) {
+        $value = get_term_meta( $term->term_id, 'noty_slug_replace', true );
+        $value = is_string( $value ) ? $value : '';
+
+        echo '<tr class="form-field">';
+        echo '<th scope="row"><label for="noty_slug_replace">Slug replace</label></th>';
+        echo '<td>';
+        echo '<input type="text" name="noty_slug_replace" id="noty_slug_replace" value="' . esc_attr( $value ) . '">';
+        echo '<p class="description">Si vide, le plugin utilise les URLs par défaut. Sinon, ce slug remplace l\'URL pour ce terme (ex: vente-immobiliere).</p>';
+        echo '</td>';
+        echo '</tr>';
+    }
+
+    public function save_noty_transaction_slug_replace_field( $term_id, $tt_id ) {
+        if ( ! isset( $_POST['noty_slug_replace'] ) ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'manage_categories' ) ) {
+            return;
+        }
+
+        $value = sanitize_title( wp_unslash( (string) $_POST['noty_slug_replace'] ) );
+        if ( $value === '' ) {
+            delete_term_meta( $term_id, 'noty_slug_replace' );
+        } else {
+            update_term_meta( $term_id, 'noty_slug_replace', $value );
+        }
+
+        flush_rewrite_rules();
     }
 }

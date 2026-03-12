@@ -63,6 +63,10 @@
   text-decoration: none;
 }
 
+.single-noty_annonce h2 {
+  color: var(--wp--preset--color--base-4);
+}
+
 .up-immo-single__body {
   display: flex;
   flex-direction: column;

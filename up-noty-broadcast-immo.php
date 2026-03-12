@@ -24,6 +24,7 @@ require_once NOTY_PLUGIN_DIR . 'includes/class-noty-bien.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-annonce.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-shortcode.php';
 require_once NOTY_PLUGIN_DIR . 'includes/meta-filters.php';
+require_once NOTY_PLUGIN_DIR . 'includes/hook-url-type-transaction.php';
 
 function noty_broadcast_register_styles() {
     $relative = 'style.css';
@@ -51,10 +52,14 @@ function noty_broadcast_activation() {
     if ( ! wp_next_scheduled( 'noty_sync_annonces_event' ) ) {
         wp_schedule_event( time(), 'daily', 'noty_sync_annonces_event' );
     }
+
+    flush_rewrite_rules();
 }
 
 // Désactivation du plugin : Nettoyage de la planification
 register_deactivation_hook( __FILE__, 'noty_broadcast_deactivation' );
 function noty_broadcast_deactivation() {
     wp_clear_scheduled_hook( 'noty_sync_annonces_event' );
+
+    flush_rewrite_rules();
 }
