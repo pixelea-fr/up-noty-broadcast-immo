@@ -36,6 +36,7 @@
   }
   &__content{
       border: 1px solid var(--wp--preset--color--base-4);
+      border-top: none;
     padding:1.5rem;
     display: flex;
     flex-direction: column;
