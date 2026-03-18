@@ -1,5 +1,7 @@
 .up-immo-card {
-
+h1,h2,h3,h4{
+font-family: var(--wp--preset--font-family--first);
+}
   display:flex;
   flex-direction: column;
   p{
