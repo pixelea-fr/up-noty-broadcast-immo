@@ -9,6 +9,9 @@
   color: #666;
 }
 
+.up-immo-card h1, .up-immo-card h2, .up-immo-card h3, .up-immo-card h4 {
+  font-family: var(--wp--preset--font-family--first);
+}
 .up-immo-card {
   display: flex;
   flex-direction: column;
