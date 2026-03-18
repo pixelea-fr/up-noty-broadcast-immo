@@ -17,23 +17,30 @@ $bien = $annonce->bien;
 <div class="up-immo-card" data-postid="<?php echo $post_id; ?>" data-templates="card">
 
     <?php if ( has_post_thumbnail( $post_id ) ) : ?>
+        
         <div class="up-immo-card__header">
+            <a class="up-immo-card__header-link" href="<?php echo esc_url( $annonce->lien ); ?>"></a>
             <?php echo get_the_post_thumbnail( $post_id, 'medium', array( 'class' => 'up-immo-card__image' ) ); ?>
             <?php if ( $bien->nature !== '' ) : ?>
                 <span class="up-immo-card__badge">
                     <?php echo esc_html( $bien->nature ); ?>
                 </span>
+                
             <?php endif; ?>
+          
         </div>
  <?php else: ?>
         <div class="up-immo-card__header">
+            <a class="up-immo-card__header-link" href="<?php echo esc_url( $annonce->lien ); ?>"></a>
             <img src="<?php echo esc_url( plugins_url( 'assets/images/no-image.png',"up-noty-broadcast-immo/up-noty-broadcast-immo.php" ) ); ?>" alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>" class="up-immo-card__image">
             <?php if ( $bien->nature !== '' ) : ?>
                 <span class="up-immo-card__badge">
                     <?php echo esc_html( $bien->nature ); ?>
                 </span>  
             <?php endif; ?>
+            
         </div>
+
     <?php endif; ?>
     <div class="up-immo-card__content">
                 <div class="up-immo-card__price-container"><span class="up-immo-card__price">
@@ -69,7 +76,7 @@ $bien = $annonce->bien;
             <span class="up-immo-card__meta">
                 <?php echo esc_html( $bien->caracteristiques ); ?>
             </span>
-            <a href="<?php echo esc_url( $annonce->lien ); ?>" class="up-immo-card__btn">
+            <a class="btn-with-arrow" href="<?php echo esc_url( $annonce->lien ); ?>" class="up-immo-card__btn">
            En savoir plus 
         </a>
         </div>

@@ -20,6 +20,11 @@ font-family: var(--wp--preset--font-family--first);
       display:flex;
   flex-direction: column;
     position: relative;
+    &-link{
+      position: absolute;
+      inset:0;
+      z-index:1;
+    }
   }
   &__badge{
     position: absolute;
