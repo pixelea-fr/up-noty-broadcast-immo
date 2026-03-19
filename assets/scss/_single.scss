@@ -16,7 +16,10 @@ margin-bottom:0;
 }
 
 .single-noty_annonce{
-  h2{
+  h1{
+font-size: var(--wp--preset--font-size--xl);
+  }
+  h1,h2,h3,h4{
     color:var(--wp--preset--color--base-4);
  
   }

@@ -86,7 +86,10 @@
   margin-top: 0;
 }
 
-.single-noty_annonce h2 {
+.single-noty_annonce h1 {
+  font-size: var(--wp--preset--font-size--xl);
+}
+.single-noty_annonce h1, .single-noty_annonce h2, .single-noty_annonce h3, .single-noty_annonce h4 {
   color: var(--wp--preset--color--base-4);
 }
 .single-noty_annonce h2, .single-noty_annonce h3, .single-noty_annonce h4 {
