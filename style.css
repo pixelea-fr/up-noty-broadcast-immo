@@ -72,8 +72,27 @@
   text-decoration: none;
 }
 
+.data-bien__container {
+  border: 2px solid var(--wp--preset--color--base-4);
+  border-radius: var(--wp--custom--border-radius--default);
+  padding: var(--clamp-7-5-rem-half);
+  --min-margin: var( --clamp-7-5-rem-half);
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: max(var(--min-margin), (100% - var(--wp--style--global--wide-size)) / 2) !important;
+  margin-right: max(var(--min-margin), (100% - var(--wp--style--global--wide-size)) / 2) !important;
+}
+.data-bien__container h1 {
+  margin-top: 0;
+}
+
 .single-noty_annonce h2 {
   color: var(--wp--preset--color--base-4);
+}
+.single-noty_annonce h2, .single-noty_annonce h3, .single-noty_annonce h4 {
+  font-family: var(--wp--preset--font-family--first);
+  font-size: var(--wp--preset--font-size--ll);
+  line-height: 1.25;
 }
 
 .up-immo-single__body {
@@ -92,6 +111,17 @@
   grid-template-columns: repeat(2, 1fr);
   -moz-column-gap: 2.5rem;
        column-gap: 2.5rem;
+}
+@media (max-width: 959px) {
+  .up-immo-single__table {
+    grid-template-columns: 1fr;
+  }
+  .up-immo-single__table-row {
+    padding: 0rem 0.5rem;
+  }
+  .up-immo-single__table-row:nth-child(odd) {
+    background-color: var(--wp--preset--color--base-3);
+  }
 }
 .up-immo-single__table-row {
   -moz-column-break-inside: avoid;
