@@ -47,6 +47,7 @@
   padding: 2px 8px;
   border-radius: 3px;
   font-size: 0.8em;
+  text-transform: capitalize;
 }
 .up-immo-card__image {
   width: 100%;

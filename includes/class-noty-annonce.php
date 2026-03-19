@@ -214,7 +214,8 @@ class Noty_Annonce {
         $self->bien->charges_resume = $charges ? implode( ' · ', $charges ) : '';
 
         $self->bien->details = self::build_details( $self->bien );
-        $self->titre = ucfirst( $self->bien->nature ) . " " . $self->bien->surface_string . " " . $self->bien->transaction_string . " à " . $self->bien->ville;
+        //$self->titre = ucfirst( $self->bien->nature ) . " " . $self->bien->surface_string . " " . $self->bien->transaction_string . " à " . $self->bien->ville;
+        $self->titre = ucfirst( $self->bien->nature ) . " à " . $self->bien->ville;
         return $self;
     }
 
