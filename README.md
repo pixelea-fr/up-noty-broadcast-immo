@@ -20,3 +20,8 @@ Plugin WordPress pour la récupération et l'affichage des annonces immobilière
 
 - `limit` : Nombre d'annonces à afficher (défaut: 12).
 - `type` : Filtrer par nature de bien (ex: maison, appartement).
+
+## Changelog
+
+- 2026-03-31 · v1.3.0 · Ajout d'un slider d'images (Swiper) avec navigation par vignettes et lightbox (Fancybox) pour l'affichage des annonces.
+- 2025-01-01 · v1.2.0 · Version antérieure.

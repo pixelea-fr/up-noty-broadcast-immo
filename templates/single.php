@@ -37,17 +37,38 @@ $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $an
         <?php endif; */ ?>
     </header>
 <div class="up-immo-single__body">    
-    <?php if ( has_post_thumbnail( $post_id ) ) : ?>
+    <?php /* if ( has_post_thumbnail( $post_id ) ) : ?>
         <section class="up-immo-single__hero">
             <?php echo get_the_post_thumbnail( $post_id, 'large', array( 'class' => 'up-immo-single__hero-image' ) ); ?>
         </section>
-    <?php endif; ?>
+    <?php endif; */?>
 
     <?php if ( ! empty( $photo_ids ) ) : ?>
         <section class="up-immo-single__gallery">
-            <?php foreach ( $photo_ids as $attachment_id ) : ?>
-                <?php echo wp_get_attachment_image( $attachment_id, 'medium', true, array( 'class' => 'up-immo-single__gallery-image' ) ); ?>
-            <?php endforeach; ?>
+            <!-- Swiper -->
+            <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="swiper swiper-main">
+                <div class="swiper-wrapper">
+                    <?php foreach ( $photo_ids as $attachment_id ) : ?>
+                        <div class="swiper-slide">
+                            <a href="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, 'full' ) ); ?>" data-fancybox="gallery">
+                                <?php echo wp_get_attachment_image( $attachment_id, 'full', false, array( 'class' => 'up-immo-single__gallery-image' ) ); ?>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+
+            <div thumbsSlider="" class="swiper swiper-thumbs">
+                <div class="swiper-wrapper">
+                    <?php foreach ( $photo_ids as $attachment_id ) : ?>
+                        <div class="swiper-slide">
+                            <?php echo wp_get_attachment_image( $attachment_id, 'medium', false, array( 'class' => 'up-immo-single__gallery-thumb' ) ); ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </section>
     <?php endif; ?>
    

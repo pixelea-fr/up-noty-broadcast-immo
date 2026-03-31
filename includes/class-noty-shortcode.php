@@ -447,6 +447,7 @@ class Noty_Shortcode {
 
     public function render_annonce( $atts ) {
         static $rendering = array();
+        static $assets_enqueued = false;
 
         $atts = shortcode_atts( array(
             'id' => 0,
@@ -454,6 +455,23 @@ class Noty_Shortcode {
             'template' => 'single',
             'order-in-column' => 'false',
         ), $atts );
+
+        // Enqueue assets only once when the 'single' template is used
+        if ( ! $assets_enqueued && $atts['template'] === 'single' ) {
+            // Swiper
+            wp_enqueue_style( 'swiper-css', 'https://unpkg.com/swiper/swiper-bundle.min.css' );
+            wp_enqueue_script( 'swiper-js', 'https://unpkg.com/swiper/swiper-bundle.min.js', array('jquery'), null, true );
+
+            // Fancybox
+            wp_enqueue_style( 'fancybox-css', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css' );
+            wp_enqueue_script( 'fancybox-js', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js', array(), null, true );
+
+            // Custom Slider Assets
+            wp_enqueue_style( 'up-immo-gallery-slider', NOTY_PLUGIN_URL . 'assets/css/gallery-slider.css', array('swiper-css', 'fancybox-css'), filemtime( NOTY_PLUGIN_DIR . 'assets/css/gallery-slider.css' ) );
+            wp_enqueue_script( 'up-immo-gallery-slider', NOTY_PLUGIN_URL . 'assets/js/gallery-slider.js', array( 'swiper-js', 'fancybox-js' ), filemtime( NOTY_PLUGIN_DIR . 'assets/js/gallery-slider.js' ), true );
+            
+            $assets_enqueued = true;
+        }
 
         $post_id = (int) $atts['id'];
 
