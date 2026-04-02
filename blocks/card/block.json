@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "noty-broadcast-immo/card",
+	"title": "Annonce - Carte",
+	"category": "widgets",
+	"icon": "format-aside",
+	"description": "Affiche une annonce immobilière au format carte",
+	"keywords": ["annonce", "immobilier", "carte", "noty"],
+	"textdomain": "noty-broadcast-immo",
+	"usesContext": ["postId", "postType"],
+	"supports": {
+		"html": false
+	},
+	"attributes": {},
+	"editorScript": "file:./index.js",
+	"editorStyle": [],
+	"style": []
+}

@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "noty-broadcast-immo/single",
+	"title": "Annonce - Détaillé",
+	"category": "widgets",
+	"icon": "format-gallery",
+	"description": "Affiche une annonce immobilière au format détaillé",
+	"keywords": ["annonce", "immobilier", "détaillé", "noty", "single"],
+	"textdomain": "noty-broadcast-immo",
+	"usesContext": ["postId", "postType"],
+	"supports": {
+		"html": false
+	},
+	"attributes": {},
+	"editorScript": "file:./index.js",
+	"editorStyle": [],
+	"style": []
+}
