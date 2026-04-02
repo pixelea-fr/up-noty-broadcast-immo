@@ -28,7 +28,7 @@ display:none;
 .swiper-main .swiper-slide img {
     display: block;
     width: 100%;
-    height: 100%;
+ 
     object-fit: cover;
     aspect-ratio: 16 / 9;
 }
@@ -40,9 +40,9 @@ display:none;
 }
 
 .swiper-thumbs .swiper-slide {
-    width: 25%;
-    height: 100%;
-    aspect-ratio: 4/3;
+    width: 20%;
+
+    aspect-ratio: 16/9;
     opacity: 0.8;
     cursor: pointer;
 }
@@ -54,6 +54,6 @@ display:none;
 .swiper-thumbs .swiper-slide img {
     display: block;
     width: 100%;
-    height: 100%;
+ aspect-ratio: 4/3;
     object-fit: cover;
 }
