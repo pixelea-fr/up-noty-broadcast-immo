@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Noty Broadcast Immo
  * Description: Affiche les annonces immobilières depuis l'API Noty Broadcast.
- * Version: 1.4.1.0
+ * Version: 1.4.2.0
  * Author: GEHIN Nicolas/ Pixelea
  * Text Domain: noty-broadcast-immo
  */
@@ -23,6 +23,7 @@ require_once NOTY_PLUGIN_DIR . 'includes/class-noty-admin.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-bien.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-annonce.php';
 require_once NOTY_PLUGIN_DIR . 'includes/class-noty-shortcode.php';
+require_once NOTY_PLUGIN_DIR . 'includes/class-noty-blocks.php';
 require_once NOTY_PLUGIN_DIR . 'includes/meta-filters.php';
 require_once NOTY_PLUGIN_DIR . 'includes/hook-url-type-transaction.php';
 
@@ -43,6 +44,7 @@ function noty_broadcast_init() {
     $admin = new Noty_Admin();
     $sync = new Noty_Sync();
     $shortcode = new Noty_Shortcode();
+    $blocks = new Noty_Blocks();
 }
 add_action( 'plugins_loaded', 'noty_broadcast_init' );
 

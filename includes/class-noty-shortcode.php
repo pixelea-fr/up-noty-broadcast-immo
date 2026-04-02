@@ -130,7 +130,8 @@ class Noty_Shortcode {
             echo '<p class="up-immo-annonces__empty">Aucune annonce disponible pour le moment.</p>';
         }
 
-        return ob_get_clean();
+        $html = ob_get_clean();
+        return $this->minify_html( $html );
     }
 
     public function render_annonce( $atts ) {
@@ -249,5 +250,24 @@ class Noty_Shortcode {
 
         unset( $rendering[ $render_key ] );
         return $html;
+    }
+
+    private function minify_html( $html ) {
+        // Supprimer les commentaires HTML (sauf les conditions IE)
+        $html = preg_replace( '/<!--(?!\s*\[if)[^\[\]>].*?-->/', '', $html );
+        
+        // Supprimer les espaces et sauts de ligne entre les balises
+        $html = preg_replace( '/>\s+</', '><', $html );
+        
+        // Supprimer les espaces en début et fin de ligne
+        $html = preg_replace( '/^\s+|\s+$/m', '', $html );
+        
+        // Supprimer les sauts de ligne multiples
+        $html = preg_replace( '/\s+/', ' ', $html );
+        
+        // Supprimer les espaces autour des signes = dans les attributs
+        $html = preg_replace( '/\s*=\s*/', '=', $html );
+        
+        return trim( $html );
     }
 }
