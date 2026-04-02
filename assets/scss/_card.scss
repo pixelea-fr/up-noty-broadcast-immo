@@ -60,7 +60,11 @@ font-family: var(--wp--preset--font-family--first);
       text-decoration: none;
     }
   }
-
+&__details{
+  display:flex;
+  flex-direction: column;
+  gap:.5rem;
+}
 }
 
 // .up-immo-card {

@@ -214,6 +214,7 @@ class Noty_Annonce {
         $self->bien->charges_resume = $charges ? implode( ' · ', $charges ) : '';
 
         $self->bien->details = self::build_details( $self->bien );
+        $self->bien->resume_details = self::build_resume_details( $self->bien );
         //$self->titre = ucfirst( $self->bien->nature ) . " " . $self->bien->surface_string . " " . $self->bien->transaction_string . " à " . $self->bien->ville;
         $self->titre = ucfirst( $self->bien->nature ) . " à " . $self->bien->ville;
         return $self;
@@ -285,55 +286,156 @@ class Noty_Annonce {
         return $ordered;
     }
 
+    private static function add_detail( &$details, $meta, $label, $value ) {
+        if ( $value === '' || $value === null ) {
+            return;
+        }
+        $details[] = array(
+            'meta'  => (string) $meta,
+            'label' => (string) $label,
+            'value' => $value,
+        );
+    }
+
+    private static function build_common_details( Noty_Bien $bien ) {
+        $common = array();
+        
+        self::add_detail( $common, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $common, 'pieces', 'Nombre de pièces', $bien->pieces );
+        self::add_detail( $common, 'chambres', 'Nombre de chambres', $bien->chambres );
+        
+        return $common;
+    }
+
+    private static function build_resume_details( Noty_Bien $bien ) {
+        $transaction_type = strtolower( trim( (string) $bien->transaction_type ) );
+
+        switch ( $transaction_type ) {
+            case 'location':
+                return self::build_resume_details_location( $bien );
+            case 'vente_traditionnelle':
+                return self::build_resume_details_vente_traditionnelle( $bien );
+            case 'vente_viager':
+                return self::build_resume_details_vente_viager( $bien );
+            default:
+                return self::build_resume_details_vente_traditionnelle( $bien );
+        }
+    }
+
+    private static function build_resume_details_location( Noty_Bien $bien ) {
+        $resume = array();
+
+       // self::add_detail( $resume, 'loyer', 'Loyer', $bien->loyer );
+        self::add_detail( $resume, 'charges_incluses', 'Charges incluses', $bien->charges_incluses );
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
+
+        return $resume;
+    }
+
+    private static function build_resume_details_vente_traditionnelle( Noty_Bien $bien ) {
+        $resume = array();
+
+       // self::add_detail( $resume, 'prix', 'Prix', $bien->prix );
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
+        self::add_detail( $resume, 'honoraires', 'Honoraires', $bien->honoraires );
+
+        return $resume;
+    }
+
+    private static function build_resume_details_vente_viager( Noty_Bien $bien ) {
+        $resume = array();
+
+        self::add_detail( $resume, 'bouquet', 'Bouquet', $bien->bouquet );
+        
+        if ( is_array( $bien->rente ) ) {
+            $m = isset( $bien->rente['montant'] ) ? $bien->rente['montant'] : '';
+            $p = isset( $bien->rente['periodicite'] ) ? $bien->rente['periodicite'] : '';
+            if ( $m !== '' ) {
+                self::add_detail( $resume, 'rente', 'Rente', number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' ) );
+            }
+        }
+        
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
+
+        return $resume;
+    }
+
     private static function build_details( Noty_Bien $bien ) {
+        $transaction_type = strtolower( trim( (string) $bien->transaction_type ) );
+
+        switch ( $transaction_type ) {
+            case 'location':
+                return self::build_details_location( $bien );
+            case 'vente_traditionnelle':
+                return self::build_details_vente_traditionnelle( $bien );
+            case 'vente_viager':
+                return self::build_details_vente_viager( $bien );
+            default:
+                return self::build_details_vente_traditionnelle( $bien );
+        }
+    }
+
+    private static function build_details_location( Noty_Bien $bien ) {
         $details = array();
 
-        $add = function( $meta, $label, $value ) use ( &$details ) {
-            if ( $value === '' || $value === null ) {
-                return;
-            }
-            $details[] = array(
-                'meta'  => (string) $meta,
-                'label' => (string) $label,
-                'value' => $value,
-            );
-        };
+        self::add_detail( $details, 'transaction_type', 'Transaction', $bien->transaction_type );
+        self::add_detail( $details, 'type_honoraires', 'Type honoraires', $bien->type_honoraires );
+        self::add_detail( $details, 'honoraires', 'Honoraires', $bien->honoraires );
+        self::add_detail( $details, 'honoraires_pourcentage', 'Honoraires (%)', $bien->honoraires_pourcentage );
+        
+        self::add_detail( $details, 'loyer', 'Loyer', $bien->loyer );
+        self::add_detail( $details, 'charges_incluses', 'Charges incluses', $bien->charges_incluses );
+        self::add_detail( $details, 'montant_charges', 'Montant charges', $bien->montant_charges );
+        self::add_detail( $details, 'montant_etat_lieux', 'État des lieux', $bien->montant_etat_lieux );
+        self::add_detail( $details, 'meuble', 'Meublé', $bien->meuble );
+        self::add_detail( $details, 'montant_depot_garantie', 'Dépôt de garantie', $bien->montant_depot_garantie );
+        
+        $details = array_merge( $details, self::build_common_details( $bien ) );
 
-        $add( 'transaction_type', 'Transaction', $bien->transaction_type );
-        $add( 'type_honoraires', 'Type honoraires', $bien->type_honoraires );
-        $add( 'honoraires', 'Honoraires', $bien->honoraires );
-        $add( 'honoraires_pourcentage', 'Honoraires (%)', $bien->honoraires_pourcentage );
-        $add( 'charges_copropriete', 'Charges copropriété', $bien->charges_copropriete );
-        $add( 'frais_acte', 'Frais d\'acte', $bien->frais_acte );
-        $add( 'bouquet', 'Bouquet', $bien->bouquet );
-        $add( 'bouquet_hni', 'Bouquet HNI', $bien->bouquet_hni );
-        $add( 'bouquet_nv', 'Bouquet NV', $bien->bouquet_nv );
+        return $details;
+    }
+
+    private static function build_details_vente_traditionnelle( Noty_Bien $bien ) {
+        $details = array();
+
+        self::add_detail( $details, 'transaction_type', 'Transaction', $bien->transaction_type );
+        self::add_detail( $details, 'type_honoraires', 'Type honoraires', $bien->type_honoraires );
+        self::add_detail( $details, 'honoraires', 'Honoraires', $bien->honoraires );
+        self::add_detail( $details, 'honoraires_pourcentage', 'Honoraires (%)', $bien->honoraires_pourcentage );
+        self::add_detail( $details, 'charges_copropriete', 'Charges copropriété', $bien->charges_copropriete );
+        self::add_detail( $details, 'frais_acte', 'Frais d\'acte', $bien->frais_acte );
+        
+        $details = array_merge( $details, self::build_common_details( $bien ) );
+
+        return $details;
+    }
+
+    private static function build_details_vente_viager( Noty_Bien $bien ) {
+        $details = array();
+
+        self::add_detail( $details, 'transaction_type', 'Transaction', $bien->transaction_type );
+        self::add_detail( $details, 'type_honoraires', 'Type honoraires', $bien->type_honoraires );
+        self::add_detail( $details, 'honoraires', 'Honoraires', $bien->honoraires );
+        self::add_detail( $details, 'honoraires_pourcentage', 'Honoraires (%)', $bien->honoraires_pourcentage );
+        self::add_detail( $details, 'charges_copropriete', 'Charges copropriété', $bien->charges_copropriete );
+        self::add_detail( $details, 'frais_acte', 'Frais d\'acte', $bien->frais_acte );
+        
+        self::add_detail( $details, 'bouquet', 'Bouquet', $bien->bouquet );
+        self::add_detail( $details, 'bouquet_hni', 'Bouquet HNI', $bien->bouquet_hni );
+        self::add_detail( $details, 'bouquet_nv', 'Bouquet NV', $bien->bouquet_nv );
 
         if ( is_array( $bien->rente ) ) {
             $m = isset( $bien->rente['montant'] ) ? $bien->rente['montant'] : '';
             $p = isset( $bien->rente['periodicite'] ) ? $bien->rente['periodicite'] : '';
             if ( $m !== '' ) {
-                $add( 'rente', 'Rente', number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' ) );
+                self::add_detail( $details, 'rente', 'Rente', number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' ) );
             }
         }
-
-        if ( $bien->loyer !== '' ) {
-            if ( $bien->charges_incluses !== '' ) {
-                $add( 'charges_incluses', 'Charges incluses', $bien->charges_incluses );
-            }
-            if ( $bien->montant_charges !== '' ) {
-                $add( 'montant_charges', 'Montant charges', $bien->montant_charges );
-            }
-            if ( $bien->montant_etat_lieux !== '' ) {
-                $add( 'montant_etat_lieux', 'État des lieux', $bien->montant_etat_lieux );
-            }
-            if ( $bien->meuble !== '' ) {
-                $add( 'meuble', 'Meublé', $bien->meuble );
-            }
-            if ( $bien->montant_depot_garantie !== '' ) {
-                $add( 'montant_depot_garantie', 'Dépôt de garantie', $bien->montant_depot_garantie );
-            }
-        }
+        
+        $details = array_merge( $details, self::build_common_details( $bien ) );
 
         return $details;
     }

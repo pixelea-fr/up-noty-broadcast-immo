@@ -51,4 +51,5 @@ class Noty_Bien {
     public $charges_resume = '';
 
     public $details = array();
+    public $resume_details = array();
 }

@@ -18,7 +18,7 @@ $bien = $annonce->bien;
     <?php if (has_post_thumbnail($post_id)) : ?>
         <div class="up-immo-card__header">
             <a class="up-immo-card__header-link" href="<?php echo esc_url($annonce->lien); ?>"></a>
-            <?php echo get_the_post_thumbnail($post_id, 'medium', array('class' => 'up-immo-card__image')); ?>
+            <?php echo get_the_post_thumbnail($post_id, 'large', array('class' => 'up-immo-card__image')); ?>
             <?php if ($bien->nature !== '') : ?>
                 <span class="up-immo-card__badge">
                     <?php echo esc_html($bien->nature); ?>
@@ -48,14 +48,15 @@ $bien = $annonce->bien;
         <h3 class="up-immo-card__title">
             <a class="up-immo-card__title-link" href="<?php echo esc_url($annonce->lien); ?>"><?php echo esc_html($annonce->titre); ?></a>
         </h3>
-        <span class="up-immo-card__meta">
-            <?php echo esc_html($bien->caracteristiques); ?>
-        </span>
-        <?php if ($bien->charges_resume !== '') : ?>
-            <p class="up-immo-card__charges">
-                <?php echo esc_html($bien->charges_resume); ?>
-            </p>
-        <?php endif; ?>
+        <div class="p-immo-card__details">
+        <?php
+       foreach ( $annonce->bien->resume_details as $detail ) {
+    echo '<div class="p-immo-card__detail">';
+    echo '<span class="label">' . esc_html( $detail['label'] ) . ' :</span> ';
+    echo '<span class="value">' . esc_html( $detail['value'] ) . '</span>';
+    echo '</div>';
+} ?>
+</div>
         <a class="btn-with-arrow" href="<?php echo esc_url($annonce->lien); ?>" class="up-immo-card__btn">
             En savoir plus
         </a>
