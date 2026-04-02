@@ -80,9 +80,8 @@
 }
 
 .data-bien__container {
-  border: 2px solid var(--wp--preset--color--base-4);
   border-radius: var(--wp--custom--border-radius--default);
-  padding: var(--clamp-7-5-rem-half);
+  padding: 0 var(--clamp-7-5-rem-half);
   --min-margin: var( --clamp-7-5-rem-half);
   --container-width:1680px;
   margin-top: 0;
