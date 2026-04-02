@@ -33,6 +33,18 @@ font-size: var(--wp--preset--font-size--xl);
 
 }
 .up-immo-single {
+  &__zoom{
+    padding: .5em;
+
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    opacity: .7;
+    &:hover{
+      opacity:1;
+    }
+    
+  }
   &__body{
     display: flex;
     flex-direction: column;

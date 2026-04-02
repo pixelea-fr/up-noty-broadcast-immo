@@ -18,9 +18,16 @@ class Noty_Sync {
         $this->maybe_dump_json( $data, 'annonces' );
 
         $annonces = isset( $data['results'] ) ? $data['results'] : [];
+        $imported_uuids = array();
+        
         foreach ( $annonces as $annonce ) {
-            $this->process_annonce( $annonce );
+            $post_id = $this->process_annonce( $annonce );
+            if ( $post_id && isset( $annonce['uuid'] ) ) {
+                $imported_uuids[] = $annonce['uuid'];
+            }
         }
+        
+        $this->handle_missing_annonces( $imported_uuids );
     }
 
     private function maybe_dump_json( $data, $prefix ) {
@@ -423,6 +430,60 @@ class Noty_Sync {
         if ( ! empty( $attachment_ids ) ) {
             update_post_meta( $post_id, 'up_photo_ids', array_values( array_unique( $attachment_ids ) ) );
         }
+    }
+
+    private function handle_missing_annonces( $imported_uuids ) {
+        $missing_action = get_option( 'noty_missing_action', 'keep' );
+        
+        if ( $missing_action === 'keep' ) {
+            return;
+        }
+        
+        $all_annonces = get_posts( array(
+            'post_type'      => 'noty_annonce',
+            'posts_per_page' => -1,
+            'post_status'    => array( 'publish', 'draft' ),
+            'fields'         => 'ids',
+        ) );
+        
+        foreach ( $all_annonces as $post_id ) {
+            $uuid = get_post_meta( $post_id, 'up_uuid', true );
+            if ( ! $uuid ) {
+                $uuid = get_post_meta( $post_id, '_noty_uuid', true );
+            }
+            
+            if ( $uuid && ! in_array( $uuid, $imported_uuids, true ) ) {
+                if ( $missing_action === 'draft' ) {
+                    wp_update_post( array(
+                        'ID'          => $post_id,
+                        'post_status' => 'draft',
+                    ) );
+                } elseif ( $missing_action === 'delete' ) {
+                    $this->delete_annonce_with_photos( $post_id );
+                }
+            }
+        }
+    }
+
+    private function delete_annonce_with_photos( $post_id ) {
+        $delete_photos = get_option( 'noty_delete_photos' ) === '1';
+        
+        if ( $delete_photos ) {
+            $photo_ids = get_post_meta( $post_id, 'up_photo_ids', true );
+            
+            if ( is_array( $photo_ids ) && ! empty( $photo_ids ) ) {
+                foreach ( $photo_ids as $attachment_id ) {
+                    wp_delete_attachment( $attachment_id, true );
+                }
+            }
+            
+            $thumbnail_id = get_post_thumbnail_id( $post_id );
+            if ( $thumbnail_id ) {
+                wp_delete_attachment( $thumbnail_id, true );
+            }
+        }
+        
+        wp_delete_post( $post_id, true );
     }
 
     private function generate_title( $annonce ) {

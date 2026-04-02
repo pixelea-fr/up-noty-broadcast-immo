@@ -31,6 +31,8 @@ class Noty_Admin {
         register_setting( 'noty_settings_group', 'noty_api_url' );
         register_setting( 'noty_settings_group', 'noty_debug_dump_json' );
         register_setting( 'noty_settings_group', 'noty_selected_meta_paths' );
+        register_setting( 'noty_settings_group', 'noty_missing_action' );
+        register_setting( 'noty_settings_group', 'noty_delete_photos' );
     }
 
     public function settings_page() {
@@ -71,6 +73,39 @@ class Noty_Admin {
                     </tr>
                 </table>
 
+                <h2>Gestion des biens lors de l'import</h2>
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row">Action sur les biens non présents</th>
+                        <td>
+                            <?php $missing_action = get_option( 'noty_missing_action', 'keep' ); ?>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_missing_action" value="keep" <?php checked( $missing_action, 'keep' ); ?> />
+                                <strong>Garder</strong> - Les biens non présents dans l'import restent publiés
+                            </label>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_missing_action" value="draft" <?php checked( $missing_action, 'draft' ); ?> />
+                                <strong>Mettre en brouillon</strong> - Les biens non présents passent en statut brouillon
+                            </label>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_missing_action" value="delete" <?php checked( $missing_action, 'delete' ); ?> />
+                                <strong>Supprimer</strong> - Les biens non présents sont supprimés définitivement
+                            </label>
+                            <p class="description">Définit ce qui arrive aux biens qui ne sont plus présents dans le fichier d'import de l'API.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Suppression des photos</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="noty_delete_photos" value="1" <?php checked( get_option( 'noty_delete_photos' ), '1' ); ?> />
+                                Supprimer les photos rattachées lors de la suppression d'un bien
+                            </label>
+                            <p class="description">Si activé, les photos de la bibliothèque de médias seront supprimées lorsqu'un bien est supprimé.</p>
+                        </td>
+                    </tr>
+                </table>
+
                 <h2>Métas WordPress (sélection)</h2>
                 <p class="description">La liste ci-dessous est alimentée automatiquement lors des imports. Coche les champs à enregistrer en métas WordPress (créées / mises à jour à chaque import).</p>
 
@@ -87,19 +122,49 @@ class Noty_Admin {
                 if ( empty( $discovered ) ) :
                     echo '<p>Aucun champ découvert pour le moment. Lance une synchronisation pour alimenter la liste.</p>';
                 else :
-                    echo '<div style="max-height:360px;overflow:auto;border:1px solid #ccd0d4;background:#fff;padding:10px;">';
-                    foreach ( $discovered as $path ) {
-                        if ( ! is_string( $path ) || $path === '' ) {
-                            continue;
-                        }
+                    ?>
+                    <p style="margin-bottom:10px;">
+                        <button type="button" id="select-all-metas" class="button">Tout sélectionner</button>
+                        <button type="button" id="deselect-all-metas" class="button">Tout désélectionner</button>
+                    </p>
+                    
+                    <div id="metas-checkboxes" style="max-height:360px;overflow:auto;border:1px solid #ccd0d4;background:#fff;padding:10px;">
+                        <?php
+                        foreach ( $discovered as $path ) {
+                            if ( ! is_string( $path ) || $path === '' ) {
+                                continue;
+                            }
 
-                        $is_checked = in_array( $path, $selected, true );
-                        echo '<label style="display:block;margin:4px 0;">';
-                        echo '<input type="checkbox" name="noty_selected_meta_paths[]" value="' . esc_attr( $path ) . '" ' . checked( $is_checked, true, false ) . ' /> ';
-                        echo '<code>' . esc_html( $path ) . '</code>';
-                        echo '</label>';
-                    }
-                    echo '</div>';
+                            $is_checked = in_array( $path, $selected, true );
+                            echo '<label style="display:block;margin:4px 0;">';
+                            echo '<input type="checkbox" name="noty_selected_meta_paths[]" value="' . esc_attr( $path ) . '" ' . checked( $is_checked, true, false ) . ' /> ';
+                            echo '<code>' . esc_html( $path ) . '</code>';
+                            echo '</label>';
+                        }
+                        ?>
+                    </div>
+                    
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const selectAllBtn = document.getElementById('select-all-metas');
+                        const deselectAllBtn = document.getElementById('deselect-all-metas');
+                        const checkboxesContainer = document.getElementById('metas-checkboxes');
+                        const checkboxes = checkboxesContainer.querySelectorAll('input[type="checkbox"]');
+
+                        selectAllBtn.addEventListener('click', function() {
+                            checkboxes.forEach(function(checkbox) {
+                                checkbox.checked = true;
+                            });
+                        });
+
+                        deselectAllBtn.addEventListener('click', function() {
+                            checkboxes.forEach(function(checkbox) {
+                                checkbox.checked = false;
+                            });
+                        });
+                    });
+                    </script>
+                    <?php
                 endif;
                 ?>
 

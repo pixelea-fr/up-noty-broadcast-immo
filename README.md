@@ -23,6 +23,7 @@ Plugin WordPress pour la récupération et l'affichage des annonces immobilière
 
 ## Changelog
 
+- 2026-04-02 · v1.4.1.0 · Ajout d'options de configuration pour la gestion des biens lors de l'import : choix de l'action sur les biens non présents (garder, mettre en brouillon ou supprimer) et option de suppression des photos rattachées lors de la suppression d'un bien.
 - 2026-04-02 · v1.4.0 · Améliorations de l'affichage : suppression des prix dans les cartes, ajout du prix dans la galerie des annonces single, amélioration du style des détails des cartes, optimisation du container width à 1680px.
 - 2026-03-31 · v1.3.0 · Ajout d'un slider d'images (Swiper) avec navigation par vignettes et lightbox (Fancybox) pour l'affichage des annonces.
 - 2025-01-01 · v1.2.0 · Version antérieure.

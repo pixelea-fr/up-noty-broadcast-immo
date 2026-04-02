@@ -58,8 +58,11 @@ $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $an
                     <?php foreach ( $photo_ids as $attachment_id ) : ?>
                         <div class="swiper-slide">
                             <a href="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, 'full' ) ); ?>" data-fancybox="gallery">
-                                <?php echo wp_get_attachment_image( $attachment_id, 'full', false, array( 'class' => 'up-immo-single__gallery-image' ) ); ?>
+                                  
+                            <?php echo wp_get_attachment_image( $attachment_id, 'full', false, array( 'class' => 'up-immo-single__gallery-image' ) ); ?>
+                        <div class="btn up-immo-single__zoom"><svg width="48px" height="48px" viewBox="-0.5 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M11.5 4.25H6.5C5.43913 4.25 4.42178 4.67142 3.67163 5.42157C2.92149 6.17172 2.5 7.18913 2.5 8.25V18.25C2.5 19.3109 2.92149 20.3283 3.67163 21.0784C4.42178 21.8286 5.43913 22.25 6.5 22.25H16.5C17.5609 22.25 18.5783 21.8286 19.3284 21.0784C20.0786 20.3283 20.5 19.3109 20.5 18.25V13.25" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M11.4297 13.38L20.9197 3.89001" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M15.7891 3.25H19.499C20.0295 3.25 20.5382 3.46074 20.9133 3.83582C21.2883 4.21089 21.499 4.71957 21.499 5.25V8.96002" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg> </div>  
                             </a>
+
                         </div>
                     <?php endforeach; ?>
                 </div>
