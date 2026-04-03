@@ -15,6 +15,8 @@ class Noty_Bien {
     public $chambres = '';
 
     public $prix = '';
+    public $prix_hni = '';
+    public $prix_nv = '';
     public $loyer = '';
     public $loyer_periodicite = '';
 

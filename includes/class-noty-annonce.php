@@ -73,9 +73,13 @@ class Noty_Annonce {
         $self->bien->surface_string = $self->bien->surface !== '' ? ( $self->bien->surface . ' m²' ) : '';
 
         $prix_num = self::get_meta_first( $post_id, array( 'up_prix', '_noty_prix' ), '' );
+        $prix_hni_num = self::get_meta_first( $post_id, array( 'up_prix_hni', '_noty_prix_hni' ), '' );
+        $prix_nv_num = self::get_meta_first( $post_id, array( 'up_prix_nv', '_noty_prix_nv' ), '' );
         $loyer_num = self::get_meta_first( $post_id, array( 'up_loyer', '_noty_loyer' ), '' );
 
         $self->bien->prix = self::format_eur( $prix_num );
+        $self->bien->prix_hni = self::format_eur( $prix_hni_num );
+        $self->bien->prix_nv = self::format_eur( $prix_nv_num );
         $self->bien->loyer = self::format_eur( $loyer_num );
         $self->bien->loyer_periodicite = (string) self::get_meta_first( $post_id, array( 'up_loyer_periodicite', '_noty_loyer_periodicite' ), '' );
 
@@ -138,6 +142,30 @@ class Noty_Annonce {
             if ( $self->bien->prix === '' && array_key_exists( 'prix', $raw_data ) ) {
                 $self->bien->prix = self::format_eur( $raw_data['prix'] );
             }
+            if ( $self->bien->prix_hni === '' ) {
+                $raw_prix_hni = '';
+                if ( isset( $raw_data['transaction'] ) && is_array( $raw_data['transaction'] ) ) {
+                    $raw_prix_hni = $raw_data['transaction']['prix_hni'] ?? ( $raw_data['transaction']['prixHni'] ?? '' );
+                }
+                if ( $raw_prix_hni === '' && array_key_exists( 'prix_hni', $raw_data ) ) {
+                    $raw_prix_hni = $raw_data['prix_hni'];
+                }
+                if ( $raw_prix_hni !== '' && $raw_prix_hni !== null ) {
+                    $self->bien->prix_hni = self::format_eur( $raw_prix_hni );
+                }
+            }
+            if ( $self->bien->prix_nv === '' ) {
+                $raw_prix_nv = '';
+                if ( isset( $raw_data['transaction'] ) && is_array( $raw_data['transaction'] ) ) {
+                    $raw_prix_nv = $raw_data['transaction']['prix_nv'] ?? ( $raw_data['transaction']['prixNv'] ?? '' );
+                }
+                if ( $raw_prix_nv === '' && array_key_exists( 'prix_nv', $raw_data ) ) {
+                    $raw_prix_nv = $raw_data['prix_nv'];
+                }
+                if ( $raw_prix_nv !== '' && $raw_prix_nv !== null ) {
+                    $self->bien->prix_nv = self::format_eur( $raw_prix_nv );
+                }
+            }
             if ( $self->bien->loyer === '' && array_key_exists( 'loyer', $raw_data ) ) {
                 $self->bien->loyer = self::format_eur( $raw_data['loyer'] );
             }
@@ -162,7 +190,8 @@ class Noty_Annonce {
             $self->bien->transaction_string = 'à vendre (en viager)';
         }
 
-        $self->bien->prix_ou_loyer = $self->bien->loyer !== '' ? $self->bien->loyer : $self->bien->prix;
+        $price_mode = self::get_price_display_mode();
+        $self->bien->prix_ou_loyer = self::resolve_display_price( $self->bien, $price_mode );
 
         $self->bien->localisation = trim( $self->bien->code_postal . ' ' . $self->bien->ville );
 
@@ -468,6 +497,31 @@ class Noty_Annonce {
             return '';
         }
         return (string) $terms[0]->name;
+    }
+
+    private static function get_price_display_mode() {
+        $mode = (string) get_option( 'noty_price_display_mode', 'prix' );
+        return in_array( $mode, array( 'prix', 'prix_hni' ), true ) ? $mode : 'prix';
+    }
+
+    private static function resolve_display_price( Noty_Bien $bien, $price_mode ) {
+        if ( strtolower( trim( (string) $bien->transaction_type ) ) === 'location' ) {
+            return $bien->loyer !== '' ? $bien->loyer : $bien->prix;
+        }
+
+        if ( $price_mode === 'prix_hni' ) {
+            if ( $bien->prix_hni !== '' ) {
+                return $bien->prix_hni;
+            }
+
+            return $bien->prix !== '' ? $bien->prix : $bien->prix_nv;
+        }
+
+        if ( $bien->prix !== '' ) {
+            return $bien->prix;
+        }
+
+        return $bien->prix_nv !== '' ? $bien->prix_nv : $bien->prix_hni;
     }
 
     private static function format_eur( $value ) {

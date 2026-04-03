@@ -30,9 +30,16 @@ class Noty_Admin {
         register_setting( 'noty_settings_group', 'noty_api_token' );
         register_setting( 'noty_settings_group', 'noty_api_url' );
         register_setting( 'noty_settings_group', 'noty_debug_dump_json' );
+        register_setting( 'noty_settings_group', 'noty_price_display_mode', array( $this, 'sanitize_price_display_mode' ) );
         register_setting( 'noty_settings_group', 'noty_selected_meta_paths' );
         register_setting( 'noty_settings_group', 'noty_missing_action' );
         register_setting( 'noty_settings_group', 'noty_delete_photos' );
+    }
+
+    public function sanitize_price_display_mode( $value ) {
+        $value = is_string( $value ) ? strtolower( trim( $value ) ) : 'prix';
+
+        return in_array( $value, array( 'prix', 'prix_hni' ), true ) ? $value : 'prix';
     }
 
     public function settings_page() {
@@ -69,6 +76,21 @@ class Noty_Admin {
                                 <input type="checkbox" name="noty_debug_dump_json" value="1" <?php checked( get_option( 'noty_debug_dump_json' ), '1' ); ?> />
                                 Activer la sauvegarde des réponses JSON de l'API dans le dossier uploads
                             </label>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Prix affiché</th>
+                        <td>
+                            <?php $price_display_mode = get_option( 'noty_price_display_mode', 'prix' ); ?>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_price_display_mode" value="prix" <?php checked( $price_display_mode, 'prix' ); ?> />
+                                <strong>Prix actuel</strong> - Affiche le prix affiché actuellement
+                            </label>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_price_display_mode" value="prix_hni" <?php checked( $price_display_mode, 'prix_hni' ); ?> />
+                                <strong>Prix HNI</strong> - Affiche le prix avec les frais si disponible
+                            </label>
+                            <p class="description">Ce réglage s'applique aux cards et à la fiche single. Les locations continuent d'afficher le loyer.</p>
                         </td>
                     </tr>
                 </table>
