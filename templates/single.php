@@ -45,8 +45,12 @@ $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $an
 
     <?php if ( ! empty( $photo_ids ) ) : ?>
         <section class="up-immo-single__gallery">
+            <?php $price_note = isset( $bien->prix_ou_loyer_note ) ? trim( (string) $bien->prix_ou_loyer_note ) : ''; ?>
             <div class="up-immo-single__gallery__label"> 
             <?php echo $bien->prix_ou_loyer !== '' ? esc_html($bien->prix_ou_loyer) : 'Prix sur demande'; ?>
+            <?php if ( $price_note !== '' && $bien->prix_ou_loyer !== '' ) : ?>
+                <small class="up-immo-single__price-note"><?php echo esc_html( $price_note ); ?></small>
+            <?php endif; ?>
             </div>
             <!-- Swiper -->
             <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="swiper swiper-main">

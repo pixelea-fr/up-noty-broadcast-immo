@@ -192,6 +192,7 @@ class Noty_Annonce {
 
         $price_mode = self::get_price_display_mode();
         $self->bien->prix_ou_loyer = self::resolve_display_price( $self->bien, $price_mode );
+        $self->bien->prix_ou_loyer_note = (string) get_option( 'noty_price_display_note', '' );
 
         $self->bien->localisation = trim( $self->bien->code_postal . ' ' . $self->bien->ville );
 

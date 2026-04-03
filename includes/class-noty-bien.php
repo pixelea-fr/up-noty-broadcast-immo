@@ -47,6 +47,8 @@ class Noty_Bien {
     public $gse = null;
 
     public $prix_ou_loyer = '';
+    public $prix_ou_loyer_note = '';
+    public $prix_ou_loyer_note_tooltip = '';
     public $localisation = '';
     public $caracteristiques = '—';
     public $subtitle = '';

@@ -31,6 +31,7 @@ class Noty_Admin {
         register_setting( 'noty_settings_group', 'noty_api_url' );
         register_setting( 'noty_settings_group', 'noty_debug_dump_json' );
         register_setting( 'noty_settings_group', 'noty_price_display_mode', array( $this, 'sanitize_price_display_mode' ) );
+        register_setting( 'noty_settings_group', 'noty_price_display_note', array( $this, 'sanitize_price_display_note' ) );
         register_setting( 'noty_settings_group', 'noty_selected_meta_paths' );
         register_setting( 'noty_settings_group', 'noty_missing_action' );
         register_setting( 'noty_settings_group', 'noty_delete_photos' );
@@ -40,6 +41,10 @@ class Noty_Admin {
         $value = is_string( $value ) ? strtolower( trim( $value ) ) : 'prix';
 
         return in_array( $value, array( 'prix', 'prix_hni' ), true ) ? $value : 'prix';
+    }
+
+    public function sanitize_price_display_note( $value ) {
+        return is_string( $value ) ? sanitize_text_field( $value ) : '';
     }
 
     public function settings_page() {
@@ -91,6 +96,13 @@ class Noty_Admin {
                                 <strong>Prix HNI</strong> - Affiche le prix avec les frais si disponible
                             </label>
                             <p class="description">Ce réglage s'applique aux cards et à la fiche single. Les locations continuent d'afficher le loyer.</p>
+                            <div style="margin-top:12px;">
+                                <label for="noty_price_display_note" style="display:block;margin-bottom:6px;">
+                                    Petit message à côté du prix (optionnel)
+                                </label>
+                                <input type="text" id="noty_price_display_note" name="noty_price_display_note" value="<?php echo esc_attr( get_option( 'noty_price_display_note', '' ) ); ?>" class="regular-text" placeholder="HNI" />
+                                <p class="description">Exemple : HNI. Ce texte sera affiché à côté du prix dans les cards et la fiche single.</p>
+                            </div>
                         </td>
                     </tr>
                 </table>
