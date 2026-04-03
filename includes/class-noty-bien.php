@@ -11,8 +11,14 @@ class Noty_Bien {
 
     public $surface = '';
     public $surface_string = '';
+    public $surface_terrain = '';
     public $pieces = '';
     public $chambres = '';
+    public $salles_eau = '';
+    public $salles_bain = '';
+    public $niveaux = '';
+    public $ascenseur = '';
+    public $piscine = '';
 
     public $prix = '';
     public $prix_hni = '';

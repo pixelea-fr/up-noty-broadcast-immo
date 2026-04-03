@@ -35,6 +35,133 @@ class Noty_Admin {
         register_setting( 'noty_settings_group', 'noty_selected_meta_paths' );
         register_setting( 'noty_settings_group', 'noty_missing_action' );
         register_setting( 'noty_settings_group', 'noty_delete_photos' );
+        
+        register_setting( 'noty_settings_group', 'noty_fields_location_details', array( $this, 'sanitize_fields_config' ) );
+        register_setting( 'noty_settings_group', 'noty_fields_location_resume', array( $this, 'sanitize_fields_config' ) );
+        register_setting( 'noty_settings_group', 'noty_fields_vente_traditionnelle_details', array( $this, 'sanitize_fields_config' ) );
+        register_setting( 'noty_settings_group', 'noty_fields_vente_traditionnelle_resume', array( $this, 'sanitize_fields_config' ) );
+        register_setting( 'noty_settings_group', 'noty_fields_vente_viager_details', array( $this, 'sanitize_fields_config' ) );
+        register_setting( 'noty_settings_group', 'noty_fields_vente_viager_resume', array( $this, 'sanitize_fields_config' ) );
+    }
+
+    public function sanitize_fields_config( $value ) {
+        if ( is_string( $value ) ) {
+            $value = array_map( 'trim', explode( ',', $value ) );
+        }
+        
+        if ( ! is_array( $value ) ) {
+            return array();
+        }
+        
+        return array_values( array_filter( array_map( 'sanitize_text_field', $value ) ) );
+    }
+
+    private function render_fields_config_section() {
+        $transaction_types = array(
+            'location' => 'Location',
+            'vente_traditionnelle' => 'Vente traditionnelle',
+            'vente_viager' => 'Vente viager',
+        );
+
+        foreach ( $transaction_types as $type_key => $type_label ) {
+            $this->render_transaction_fields_config( $type_key, $type_label );
+        }
+    }
+
+    private function render_transaction_fields_config( $type_key, $type_label ) {
+        $available_fields = Noty_Fields_Config::get_fields_for_type( $type_key );
+        
+        $details_option_name = 'noty_fields_' . $type_key . '_details';
+        $resume_option_name = 'noty_fields_' . $type_key . '_resume';
+        
+        $details_config = get_option( $details_option_name );
+        $resume_config = get_option( $resume_option_name );
+        
+        if ( ! is_array( $details_config ) || empty( $details_config ) ) {
+            $details_config = Noty_Fields_Config::get_default_config( $type_key, 'details' );
+        }
+        if ( ! is_array( $resume_config ) || empty( $resume_config ) ) {
+            $resume_config = Noty_Fields_Config::get_default_config( $type_key, 'resume' );
+        }
+        ?>
+        <div style="border: 1px solid #ccd0d4; padding: 20px; margin-bottom: 20px; background: #fff;">
+            <h3><?php echo esc_html( $type_label ); ?></h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Détails complets -->
+                <div>
+                    <h4>Détails complets</h4>
+                    <p class="description">Glissez-déposez les champs depuis "Disponibles" vers "Sélectionnés" et ordonnez-les.</p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>Champs disponibles</strong>
+                        <div id="available-details-<?php echo esc_attr( $type_key ); ?>" class="noty-fields-available" style="border: 1px solid #ddd; padding: 10px; background: #f9f9f9; min-height: 100px; max-height: 200px; overflow-y: auto;">
+                            <?php foreach ( $available_fields as $field_key => $field_data ) : ?>
+                                <?php if ( ! in_array( $field_key, $details_config, true ) ) : ?>
+                                    <div class="noty-field-item" data-field="<?php echo esc_attr( $field_key ); ?>" draggable="true" style="padding: 8px; margin: 4px 0; background: #fff; border: 1px solid #ddd; cursor: move; border-radius: 3px;">
+                                        <span class="dashicons dashicons-menu" style="color: #999;"></span>
+                                        <?php echo esc_html( $field_data['label'] ); ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <strong>Champs sélectionnés (dans l'ordre d'affichage)</strong>
+                        <div id="selected-details-<?php echo esc_attr( $type_key ); ?>" class="noty-fields-selected" style="border: 1px solid #ddd; padding: 10px; background: #e8f5e9; min-height: 100px; max-height: 300px; overflow-y: auto;">
+                            <?php foreach ( $details_config as $field_key ) : ?>
+                                <?php if ( isset( $available_fields[ $field_key ] ) ) : ?>
+                                    <div class="noty-field-item" data-field="<?php echo esc_attr( $field_key ); ?>" draggable="true" style="padding: 8px; margin: 4px 0; background: #fff; border: 1px solid #4caf50; cursor: move; border-radius: 3px;">
+                                        <span class="dashicons dashicons-menu" style="color: #4caf50;"></span>
+                                        <?php echo esc_html( $available_fields[ $field_key ]['label'] ); ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="input-details-<?php echo esc_attr( $type_key ); ?>" name="<?php echo esc_attr( $details_option_name ); ?>" value="<?php echo esc_attr( implode( ',', $details_config ) ); ?>" />
+                </div>
+                
+                <!-- Détails résumés -->
+                <div>
+                    <h4>Détails résumés</h4>
+                    <p class="description">Glissez-déposez les champs depuis "Disponibles" vers "Sélectionnés" et ordonnez-les.</p>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <strong>Champs disponibles</strong>
+                        <div id="available-resume-<?php echo esc_attr( $type_key ); ?>" class="noty-fields-available" style="border: 1px solid #ddd; padding: 10px; background: #f9f9f9; min-height: 100px; max-height: 200px; overflow-y: auto;">
+                            <?php foreach ( $available_fields as $field_key => $field_data ) : ?>
+                                <?php if ( ! in_array( $field_key, $resume_config, true ) ) : ?>
+                                    <div class="noty-field-item" data-field="<?php echo esc_attr( $field_key ); ?>" draggable="true" style="padding: 8px; margin: 4px 0; background: #fff; border: 1px solid #ddd; cursor: move; border-radius: 3px;">
+                                        <span class="dashicons dashicons-menu" style="color: #999;"></span>
+                                        <?php echo esc_html( $field_data['label'] ); ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <strong>Champs sélectionnés (dans l'ordre d'affichage)</strong>
+                        <div id="selected-resume-<?php echo esc_attr( $type_key ); ?>" class="noty-fields-selected" style="border: 1px solid #ddd; padding: 10px; background: #e3f2fd; min-height: 100px; max-height: 300px; overflow-y: auto;">
+                            <?php foreach ( $resume_config as $field_key ) : ?>
+                                <?php if ( isset( $available_fields[ $field_key ] ) ) : ?>
+                                    <div class="noty-field-item" data-field="<?php echo esc_attr( $field_key ); ?>" draggable="true" style="padding: 8px; margin: 4px 0; background: #fff; border: 1px solid #2196f3; cursor: move; border-radius: 3px;">
+                                        <span class="dashicons dashicons-menu" style="color: #2196f3;"></span>
+                                        <?php echo esc_html( $available_fields[ $field_key ]['label'] ); ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="input-resume-<?php echo esc_attr( $type_key ); ?>" name="<?php echo esc_attr( $resume_option_name ); ?>" value="<?php echo esc_attr( implode( ',', $resume_config ) ); ?>" />
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     public function sanitize_price_display_mode( $value ) {
@@ -139,6 +266,85 @@ class Noty_Admin {
                         </td>
                     </tr>
                 </table>
+
+                <h2>Configuration des champs de détails</h2>
+                <p class="description">Choisissez les champs à afficher dans les détails complets et les détails résumés pour chaque type de transaction. L'ordre de sélection détermine l'ordre d'affichage.</p>
+                
+                <?php $this->render_fields_config_section(); ?>
+                
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const containers = document.querySelectorAll('.noty-fields-available, .noty-fields-selected');
+                    let draggedElement = null;
+
+                    containers.forEach(container => {
+                        container.addEventListener('dragover', function(e) {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                            this.style.borderColor = '#2271b1';
+                            this.style.borderWidth = '2px';
+                        });
+
+                        container.addEventListener('dragleave', function(e) {
+                            this.style.borderColor = '#ddd';
+                            this.style.borderWidth = '1px';
+                        });
+
+                        container.addEventListener('drop', function(e) {
+                            e.preventDefault();
+                            this.style.borderColor = '#ddd';
+                            this.style.borderWidth = '1px';
+                            
+                            if (draggedElement && draggedElement.parentNode !== this) {
+                                this.appendChild(draggedElement);
+                                updateHiddenInputs();
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.noty-field-item').forEach(item => {
+                        item.addEventListener('dragstart', function(e) {
+                            draggedElement = this;
+                            e.dataTransfer.effectAllowed = 'move';
+                            this.style.opacity = '0.5';
+                        });
+
+                        item.addEventListener('dragend', function(e) {
+                            this.style.opacity = '1';
+                            draggedElement = null;
+                        });
+                        
+                        item.addEventListener('dragover', function(e) {
+                            e.preventDefault();
+                            if (this !== draggedElement && this.parentNode.classList.contains('noty-fields-selected')) {
+                                const rect = this.getBoundingClientRect();
+                                const midpoint = rect.top + rect.height / 2;
+                                if (e.clientY < midpoint) {
+                                    this.parentNode.insertBefore(draggedElement, this);
+                                } else {
+                                    this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                                }
+                                updateHiddenInputs();
+                            }
+                        });
+                    });
+
+                    function updateHiddenInputs() {
+                        document.querySelectorAll('.noty-fields-selected').forEach(selectedContainer => {
+                            const containerId = selectedContainer.id;
+                            const inputId = containerId.replace('selected-', 'input-');
+                            const hiddenInput = document.getElementById(inputId);
+                            
+                            if (hiddenInput) {
+                                const fields = Array.from(selectedContainer.querySelectorAll('.noty-field-item'))
+                                    .map(item => item.getAttribute('data-field'))
+                                    .filter(field => field);
+                                hiddenInput.value = fields.join(',');
+                            }
+                        });
+                    }
+                });
+                </script>
 
                 <h2>Métas WordPress (sélection)</h2>
                 <p class="description">La liste ci-dessous est alimentée automatiquement lors des imports. Coche les champs à enregistrer en métas WordPress (créées / mises à jour à chaque import).</p>

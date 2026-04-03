@@ -67,8 +67,14 @@ class Noty_Annonce {
         $self->bien->code_postal = (string) self::get_meta_first( $post_id, array( 'up_code_postal', '_noty_code_postal' ), '' );
 
         $self->bien->surface = (string) self::get_meta_first( $post_id, array( 'up_surface_habitable', '_noty_surface_habitable', 'up_surface', '_noty_surface' ), '' );
-        $self->bien->pieces = (string) self::get_meta_first( $post_id, array( 'up_nb_pieces', '_noty_nb_pieces' ), '' );
-        $self->bien->chambres = (string) self::get_meta_first( $post_id, array( 'up_nb_chambres', '_noty_nb_chambres' ), '' );
+        $self->bien->pieces = (string) self::get_meta_first( $post_id, array( 'up_pieces', '_noty_pieces' ), '' );
+        $self->bien->chambres = (string) self::get_meta_first( $post_id, array( 'up_chambres', '_noty_chambres' ), '' );
+        $self->bien->surface_terrain = (string) self::get_meta_first( $post_id, array( 'up_surface_terrain', '_noty_surface_terrain' ), '' );
+        $self->bien->salles_eau = (string) self::get_meta_first( $post_id, array( 'up_salles_eau', '_noty_salles_eau' ), '' );
+        $self->bien->salles_bain = (string) self::get_meta_first( $post_id, array( 'up_salles_bain', '_noty_salles_bain' ), '' );
+        $self->bien->niveaux = (string) self::get_meta_first( $post_id, array( 'up_niveaux', '_noty_niveaux' ), '' );
+        $self->bien->ascenseur = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_ascenseur', '_noty_ascenseur' ), '' ) );
+        $self->bien->piscine = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_piscine', '_noty_piscine' ), '' ) );
 
         $self->bien->surface_string = $self->bien->surface !== '' ? ( $self->bien->surface . ' m²' ) : '';
 
@@ -340,17 +346,7 @@ class Noty_Annonce {
 
     private static function build_resume_details( Noty_Bien $bien ) {
         $transaction_type = strtolower( trim( (string) $bien->transaction_type ) );
-
-        switch ( $transaction_type ) {
-            case 'location':
-                return self::build_resume_details_location( $bien );
-            case 'vente_traditionnelle':
-                return self::build_resume_details_vente_traditionnelle( $bien );
-            case 'vente_viager':
-                return self::build_resume_details_vente_viager( $bien );
-            default:
-                return self::build_resume_details_vente_traditionnelle( $bien );
-        }
+        return self::build_details_from_config( $bien, $transaction_type, 'resume' );
     }
 
     private static function build_resume_details_location( Noty_Bien $bien ) {
@@ -396,17 +392,59 @@ class Noty_Annonce {
 
     private static function build_details( Noty_Bien $bien ) {
         $transaction_type = strtolower( trim( (string) $bien->transaction_type ) );
+        return self::build_details_from_config( $bien, $transaction_type, 'details' );
+    }
 
-        switch ( $transaction_type ) {
-            case 'location':
-                return self::build_details_location( $bien );
-            case 'vente_traditionnelle':
-                return self::build_details_vente_traditionnelle( $bien );
-            case 'vente_viager':
-                return self::build_details_vente_viager( $bien );
-            default:
-                return self::build_details_vente_traditionnelle( $bien );
+    private static function build_details_from_config( Noty_Bien $bien, $transaction_type, $context = 'details' ) {
+        if ( $transaction_type === '' ) {
+            $transaction_type = 'vente_traditionnelle';
         }
+
+        $option_name = 'noty_fields_' . $transaction_type . '_' . $context;
+        $config = get_option( $option_name );
+        
+        if ( ! is_array( $config ) || empty( $config ) ) {
+            $config = Noty_Fields_Config::get_default_config( $transaction_type, $context );
+        }
+
+        $available_fields = Noty_Fields_Config::get_fields_for_type( $transaction_type );
+        $details = array();
+
+        foreach ( $config as $field_key ) {
+            if ( ! isset( $available_fields[ $field_key ] ) ) {
+                continue;
+            }
+
+            $field_config = $available_fields[ $field_key ];
+            $label = $field_config['label'];
+            $value = self::get_field_value( $bien, $field_key, $field_config );
+
+            self::add_detail( $details, $field_key, $label, $value );
+        }
+
+        return $details;
+    }
+
+    private static function get_field_value( Noty_Bien $bien, $field_key, $field_config ) {
+        if ( isset( $field_config['special'] ) && $field_config['special'] === true ) {
+            if ( $field_key === 'rente' && is_array( $bien->rente ) ) {
+                $m = isset( $bien->rente['montant'] ) ? $bien->rente['montant'] : '';
+                $p = isset( $bien->rente['periodicite'] ) ? $bien->rente['periodicite'] : '';
+                if ( $m !== '' ) {
+                    return number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' );
+                }
+                return '';
+            }
+        }
+
+        $getter = isset( $field_config['getter'] ) ? $field_config['getter'] : $field_key;
+        $value = isset( $bien->$getter ) ? $bien->$getter : '';
+
+        if ( isset( $field_config['format'] ) && $field_config['format'] === 'm2' && $value !== '' ) {
+            return $value . ' m²';
+        }
+
+        return $value;
     }
 
     private static function build_details_location( Noty_Bien $bien ) {

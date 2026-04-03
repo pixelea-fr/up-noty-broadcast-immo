@@ -32,7 +32,9 @@ Ces blocs récupèrent automatiquement l'ID du post depuis le contexte (Query Lo
 
 ## Changelog
 
-- 2026-04-03 · v1.4.6.0 · Ajout d’un survol sur la note de prix pour afficher le type d’honoraires et le pourcentage issus de l’import.
+- 2026-04-03 · v1.4.8.0 · Ajout de nouveaux champs disponibles (surface terrain, piscine, salles d'eau/bain, ascenseur, niveaux) et implémentation d'une interface drag-and-drop pour ordonner facilement les champs affichés dans les détails par type de transaction.
+- 2026-04-03 · v1.4.7.0 · Ajout d'une interface admin pour configurer les champs affichés dans les détails et détails résumés par type de transaction (location, vente traditionnelle, vente viager), avec possibilité de les ordonner.
+- 2026-04-03 · v1.4.6.0 · Ajout d'un survol sur la note de prix pour afficher le type d'honoraires et le pourcentage issus de l'import.
 - 2026-04-03 · v1.4.5.0 · Ajout d’un message optionnel à côté du prix affiché dans les cards et la single, configurable depuis l’administration.
 - 2026-04-03 · v1.4.4.0 · Ajout d’une option globale pour choisir le prix affiché dans les cards et la single entre `prix` et `prix_hni`, avec fallback sur `prix_nv` si nécessaire.
 - 2026-04-02 · v1.4.2.0 · Ajout de deux blocs Gutenberg : `noty-broadcast-immo/card` et `noty-broadcast-immo/single` pour utiliser les templates card et single directement dans l'éditeur de blocs.
