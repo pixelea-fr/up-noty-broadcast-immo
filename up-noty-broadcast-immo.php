@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Noty Broadcast Immo
  * Description: Affiche les annonces immobilières depuis l'API Noty Broadcast.
- * Version: 1.4.8.0
+ * Version: 1.4.8.1
  * Author: GEHIN Nicolas/ Pixelea
  * Text Domain: noty-broadcast-immo
  */

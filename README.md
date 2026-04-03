@@ -32,6 +32,7 @@ Ces blocs récupèrent automatiquement l'ID du post depuis le contexte (Query Lo
 
 ## Changelog
 
+- 2026-04-03 · v1.4.8.1 · Centralisation du formatage de l'affichage des données dans meta-filters.php pour assurer la cohérence partout (transformation des valeurs brutes comme "vente_traditionnelle" → "Vente", "charge_vendeur" → "Charge vendeur", ajout automatique de "m²" pour les surfaces, etc.).
 - 2026-04-03 · v1.4.8.0 · Ajout de nouveaux champs disponibles (surface terrain, piscine, salles d'eau/bain, ascenseur, niveaux) et implémentation d'une interface drag-and-drop pour ordonner facilement les champs affichés dans les détails par type de transaction.
 - 2026-04-03 · v1.4.7.0 · Ajout d'une interface admin pour configurer les champs affichés dans les détails et détails résumés par type de transaction (location, vente traditionnelle, vente viager), avec possibilité de les ordonner.
 - 2026-04-03 · v1.4.6.0 · Ajout d'un survol sur la note de prix pour afficher le type d'honoraires et le pourcentage issus de l'import.

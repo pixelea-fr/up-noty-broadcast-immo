@@ -83,19 +83,11 @@ class Noty_Fields_Config {
                 'label' => 'Rente',
                 'types' => array( 'vente_viager' ),
                 'getter' => 'rente',
-                'special' => true,
             ),
             'surface' => array(
                 'label' => 'Surface',
                 'types' => array( 'location', 'vente_traditionnelle', 'vente_viager' ),
                 'getter' => 'surface',
-                'format' => 'm2',
-            ),
-            'surface_terrain' => array(
-                'label' => 'Surface terrain',
-                'types' => array( 'location', 'vente_traditionnelle', 'vente_viager' ),
-                'getter' => 'surface_terrain',
-                'format' => 'm2',
             ),
             'pieces' => array(
                 'label' => 'Nombre de pièces',

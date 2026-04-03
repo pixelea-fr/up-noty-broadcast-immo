@@ -26,6 +26,17 @@ function noty_immo_register_meta_value_filters() {
         'montant_etat_lieux',
         'meuble',
         'montant_depot_garantie',
+        'surface',
+        'surface_terrain',
+        'pieces',
+        'chambres',
+        'salles_eau',
+        'salles_bain',
+        'niveaux',
+        'ascenseur',
+        'piscine',
+        'loyer',
+        'prix',
     );
 
     foreach ( $metas as $meta ) {
@@ -123,6 +134,34 @@ function noty_immo_meta_value_type_honoraires( $value, $row, $bien, $annonce, $p
 }
 add_filter( 'noty_immo_meta_value_type_honoraires', 'noty_immo_meta_value_type_honoraires', 10, 5 );
 
+function noty_immo_meta_value_surface( $value, $row, $bien, $annonce, $post_id ) {
+    if ( $value === '' || $value === null ) {
+        return $value;
+    }
+    return $value . ' m²';
+}
+add_filter( 'noty_immo_meta_value_surface', 'noty_immo_meta_value_surface', 10, 5 );
 
+function noty_immo_meta_value_surface_terrain( $value, $row, $bien, $annonce, $post_id ) {
+    if ( $value === '' || $value === null ) {
+        return $value;
+    }
+    return $value . ' m²';
+}
+add_filter( 'noty_immo_meta_value_surface_terrain', 'noty_immo_meta_value_surface_terrain', 10, 5 );
 
-
+function noty_immo_meta_value_rente( $value, $row, $bien, $annonce, $post_id ) {
+    if ( ! is_array( $value ) ) {
+        return $value;
+    }
+    
+    $m = isset( $value['montant'] ) ? $value['montant'] : '';
+    $p = isset( $value['periodicite'] ) ? $value['periodicite'] : '';
+    
+    if ( $m === '' || $m === null ) {
+        return '';
+    }
+    
+    return number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' );
+}
+add_filter( 'noty_immo_meta_value_rente', 'noty_immo_meta_value_rente', 10, 5 );

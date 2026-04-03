@@ -426,24 +426,13 @@ class Noty_Annonce {
     }
 
     private static function get_field_value( Noty_Bien $bien, $field_key, $field_config ) {
-        if ( isset( $field_config['special'] ) && $field_config['special'] === true ) {
-            if ( $field_key === 'rente' && is_array( $bien->rente ) ) {
-                $m = isset( $bien->rente['montant'] ) ? $bien->rente['montant'] : '';
-                $p = isset( $bien->rente['periodicite'] ) ? $bien->rente['periodicite'] : '';
-                if ( $m !== '' ) {
-                    return number_format( (float) $m, 0, ',', ' ' ) . ' €' . ( $p !== '' ? ' (' . $p . ')' : '' );
-                }
-                return '';
-            }
-        }
-
         $getter = isset( $field_config['getter'] ) ? $field_config['getter'] : $field_key;
         $value = isset( $bien->$getter ) ? $bien->$getter : '';
-
-        if ( isset( $field_config['format'] ) && $field_config['format'] === 'm2' && $value !== '' ) {
-            return $value . ' m²';
+        
+        if ( has_filter( 'noty_immo_meta_value_' . $field_key ) ) {
+            $value = apply_filters( 'noty_immo_meta_value_' . $field_key, $value, null, $bien, null, null );
         }
-
+        
         return $value;
     }
 
