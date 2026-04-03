@@ -76,8 +76,7 @@ class Noty_Annonce {
         $self->bien->ascenseur = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_bien__ascenseur', 'up_ascenseur', '_noty_ascenseur' ), '' ) );
         $self->bien->piscine = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_bien__piscine', 'up_piscine', '_noty_piscine' ), '' ) );
 
-        $self->bien->surface_string = $self->bien->surface !== '' ? ( $self->bien->surface . ' m²' ) : '';
-
+        
         $prix_num = self::get_meta_first( $post_id, array( 'up_prix', '_noty_prix' ), '' );
         $prix_hni_num = self::get_meta_first( $post_id, array( 'up_prix_hni', '_noty_prix_hni' ), '' );
         $prix_nv_num = self::get_meta_first( $post_id, array( 'up_prix_nv', '_noty_prix_nv' ), '' );
@@ -205,7 +204,7 @@ class Noty_Annonce {
 
         $car = array();
         if ( $self->bien->surface !== '' ) {
-            $car[] = $self->bien->surface . ' m²';
+            $car[] = $self->bien->surface;
         }
         if ( $self->bien->pieces !== '' ) {
             $car[] = $self->bien->pieces . ' pièces';
@@ -337,7 +336,7 @@ class Noty_Annonce {
     private static function build_common_details( Noty_Bien $bien ) {
         $common = array();
         
-        self::add_detail( $common, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $common, 'surface', 'Surface', $bien->surface );
         self::add_detail( $common, 'pieces', 'Nombre de pièces', $bien->pieces );
         self::add_detail( $common, 'chambres', 'Nombre de chambres', $bien->chambres );
         
@@ -354,7 +353,7 @@ class Noty_Annonce {
 
        // self::add_detail( $resume, 'loyer', 'Loyer', $bien->loyer );
         self::add_detail( $resume, 'charges_incluses', 'Charges incluses', $bien->charges_incluses );
-        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface );
         self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
 
         return $resume;
@@ -364,7 +363,7 @@ class Noty_Annonce {
         $resume = array();
 
        // self::add_detail( $resume, 'prix', 'Prix', $bien->prix );
-        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface );
         self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
         self::add_detail( $resume, 'honoraires', 'Honoraires', $bien->honoraires );
 
@@ -384,7 +383,7 @@ class Noty_Annonce {
             }
         }
         
-        self::add_detail( $resume, 'surface', 'Surface', $bien->surface !== '' ? $bien->surface . ' m²' : '' );
+        self::add_detail( $resume, 'surface', 'Surface', $bien->surface );
         self::add_detail( $resume, 'pieces', 'Pièces', $bien->pieces );
 
         return $resume;

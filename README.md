@@ -32,6 +32,7 @@ Ces blocs récupèrent automatiquement l'ID du post depuis le contexte (Query Lo
 
 ## Changelog
 
+- 2026-04-03 · v1.4.8.3 · Correction du double formatage des surfaces (affichage "m² m²") en supprimant surface_string qui est maintenant géré par les filtres meta.
 - 2026-04-03 · v1.4.8.2 · Correction des noms de méta pour correspondre aux vraies données de l'API Noty (up_bien__nb_pieces, up_bien__nb_chambres, up_bien__nb_sdb, up_bien__nb_salles_eau, up_bien__nb_niveaux, up_bien__piscine, etc.).
 - 2026-04-03 · v1.4.8.1 · Centralisation du formatage de l'affichage des données dans meta-filters.php pour assurer la cohérence partout (transformation des valeurs brutes comme "vente_traditionnelle" → "Vente", "charge_vendeur" → "Charge vendeur", ajout automatique de "m²" pour les surfaces, etc.).
 - 2026-04-03 · v1.4.8.0 · Ajout de nouveaux champs disponibles (surface terrain, piscine, salles d'eau/bain, ascenseur, niveaux) et implémentation d'une interface drag-and-drop pour ordonner facilement les champs affichés dans les détails par type de transaction.
