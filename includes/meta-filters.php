@@ -138,12 +138,20 @@ function noty_immo_meta_value_surface( $value, $row, $bien, $annonce, $post_id )
     if ( $value === '' || $value === null ) {
         return $value;
     }
+    // Vérifier si "m²" est déjà présent pour éviter le double formatage
+    if ( strpos( $value, 'm²' ) !== false ) {
+        return $value;
+    }
     return $value . ' m²';
 }
 add_filter( 'noty_immo_meta_value_surface', 'noty_immo_meta_value_surface', 10, 5 );
 
 function noty_immo_meta_value_surface_terrain( $value, $row, $bien, $annonce, $post_id ) {
     if ( $value === '' || $value === null ) {
+        return $value;
+    }
+    // Vérifier si "m²" est déjà présent pour éviter le double formatage
+    if ( strpos( $value, 'm²' ) !== false ) {
         return $value;
     }
     return $value . ' m²';
