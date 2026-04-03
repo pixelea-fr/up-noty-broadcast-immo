@@ -35,11 +35,12 @@ $bien = $annonce->bien;
     <?php endif; ?>
     <div class="up-immo-card__content">
         <?php $price_note = isset( $bien->prix_ou_loyer_note ) ? trim( (string) $bien->prix_ou_loyer_note ) : ''; ?>
+        <?php $price_note_tooltip = isset( $bien->prix_ou_loyer_note_tooltip ) ? trim( (string) $bien->prix_ou_loyer_note_tooltip ) : ''; ?>
         <div class="up-immo-card__price-container">
             <span class="up-immo-card__price">
                 <?php echo $bien->prix_ou_loyer !== '' ? esc_html($bien->prix_ou_loyer) : 'Prix sur demande'; ?>
                 <?php if ( $price_note !== '' && $bien->prix_ou_loyer !== '' ) : ?>
-                    <small class="up-immo-card__price-note"><?php echo esc_html( $price_note ); ?></small>
+                    <small class="up-immo-card__price-note"<?php echo $price_note_tooltip !== '' ? ' title="' . esc_attr( $price_note_tooltip ) . '"' : ''; ?>><?php echo esc_html( $price_note ); ?></small>
                 <?php endif; ?>
             </span>
             <!-- <?php if ($bien->loyer !== '' && $bien->loyer_periodicite !== '') : ?>

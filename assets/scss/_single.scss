@@ -33,6 +33,59 @@ font-size: var(--wp--preset--font-size--xl);
 
 }
 .up-immo-single {
+  &__price-note{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: .5rem;
+    cursor: pointer;
+
+    &::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + .6rem);
+      transform: translateX(-50%) translateY(4px);
+      min-width: max-content;
+      max-width: 100px;
+      padding: .55rem .75rem;
+      border-radius: .55rem;
+      background: rgba(20, 23, 30, .96);
+      color: #fff;
+      font-size: .78rem;
+      line-height: 1.35;
+      text-align: left;
+      white-space: pre-line;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .22);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + .2rem);
+      transform: translateX(-50%) translateY(4px);
+      border-width: .45rem .45rem 0 .45rem;
+      border-style: solid;
+      border-color: rgba(20, 23, 30, .96) transparent transparent transparent;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 21;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    &:hover::after,
+    &:focus::after,
+    &:hover::before,
+    &:focus::before {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
   &__zoom{
     padding: .5em;
 

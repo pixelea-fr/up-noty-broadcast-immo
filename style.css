@@ -105,6 +105,54 @@
   line-height: 1.25;
 }
 
+.up-immo-single__price-note {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  cursor: pointer;
+}
+.up-immo-single__price-note::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.6rem);
+  transform: translateX(-50%) translateY(4px);
+  min-width: -moz-max-content;
+  min-width: max-content;
+  max-width: 100px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.55rem;
+  background: rgba(20, 23, 30, 0.96);
+  color: #fff;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-align: left;
+  white-space: pre-line;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.up-immo-single__price-note::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.2rem);
+  transform: translateX(-50%) translateY(4px);
+  border-width: 0.45rem 0.45rem 0 0.45rem;
+  border-style: solid;
+  border-color: rgba(20, 23, 30, 0.96) transparent transparent transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 21;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.up-immo-single__price-note:hover::after, .up-immo-single__price-note:focus::after, .up-immo-single__price-note:hover::before, .up-immo-single__price-note:focus::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .up-immo-single__zoom {
   padding: 0.5em;
   position: absolute;

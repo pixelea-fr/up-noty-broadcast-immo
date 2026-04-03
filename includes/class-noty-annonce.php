@@ -193,6 +193,7 @@ class Noty_Annonce {
         $price_mode = self::get_price_display_mode();
         $self->bien->prix_ou_loyer = self::resolve_display_price( $self->bien, $price_mode );
         $self->bien->prix_ou_loyer_note = (string) get_option( 'noty_price_display_note', '' );
+        $self->bien->prix_ou_loyer_note_tooltip = self::build_price_note_tooltip( $self->bien );
 
         $self->bien->localisation = trim( $self->bien->code_postal . ' ' . $self->bien->ville );
 
@@ -503,6 +504,37 @@ class Noty_Annonce {
     private static function get_price_display_mode() {
         $mode = (string) get_option( 'noty_price_display_mode', 'prix' );
         return in_array( $mode, array( 'prix', 'prix_hni' ), true ) ? $mode : 'prix';
+    }
+
+    private static function build_price_note_tooltip( Noty_Bien $bien ) {
+        $type_honoraires = trim( (string) $bien->type_honoraires );
+        $honoraires_pourcentage = trim( (string) $bien->honoraires_pourcentage );
+
+        if ( $type_honoraires === '' && $honoraires_pourcentage === '' ) {
+            return '';
+        }
+
+        $parts = array();
+        if ( $type_honoraires !== '' ) {
+            $type_honoraires_normalized = strtolower( remove_accents( $type_honoraires ) );
+
+            if ( strpos( $type_honoraires_normalized, 'acquereur' ) !== false ) {
+                $parts[] = 'Honoraires à la charge de l\'acquéreur inclus dans le prix';
+            } elseif ( strpos( $type_honoraires_normalized, 'vendeur' ) !== false ) {
+                $parts[] = 'Honoraires inclus dans le prix';
+            } else {
+                $parts[] = 'Type honoraires : ' . $type_honoraires;
+            }
+        }
+        if ( $honoraires_pourcentage !== '' ) {
+            $percentage = $honoraires_pourcentage;
+            if ( strpos( $percentage, '%' ) === false ) {
+                $percentage .= ' %';
+            }
+            $parts[] = 'Montant des Honoraires: ' . $percentage;
+        }
+
+        return implode( "\n", $parts );
     }
 
     private static function resolve_display_price( Noty_Bien $bien, $price_mode ) {
