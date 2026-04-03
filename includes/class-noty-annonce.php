@@ -66,15 +66,15 @@ class Noty_Annonce {
 
         $self->bien->code_postal = (string) self::get_meta_first( $post_id, array( 'up_code_postal', '_noty_code_postal' ), '' );
 
-        $self->bien->surface = (string) self::get_meta_first( $post_id, array( 'up_surface_habitable', '_noty_surface_habitable', 'up_surface', '_noty_surface' ), '' );
-        $self->bien->pieces = (string) self::get_meta_first( $post_id, array( 'up_pieces', '_noty_pieces' ), '' );
-        $self->bien->chambres = (string) self::get_meta_first( $post_id, array( 'up_chambres', '_noty_chambres' ), '' );
-        $self->bien->surface_terrain = (string) self::get_meta_first( $post_id, array( 'up_surface_terrain', '_noty_surface_terrain' ), '' );
-        $self->bien->salles_eau = (string) self::get_meta_first( $post_id, array( 'up_salles_eau', '_noty_salles_eau' ), '' );
-        $self->bien->salles_bain = (string) self::get_meta_first( $post_id, array( 'up_salles_bain', '_noty_salles_bain' ), '' );
-        $self->bien->niveaux = (string) self::get_meta_first( $post_id, array( 'up_niveaux', '_noty_niveaux' ), '' );
-        $self->bien->ascenseur = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_ascenseur', '_noty_ascenseur' ), '' ) );
-        $self->bien->piscine = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_piscine', '_noty_piscine' ), '' ) );
+        $self->bien->surface = (string) self::get_meta_first( $post_id, array( 'up_bien__surface_habitable', 'up_surface_habitable', '_noty_surface_habitable', 'up_surface', '_noty_surface' ), '' );
+        $self->bien->pieces = (string) self::get_meta_first( $post_id, array( 'up_bien__nb_pieces', 'up_pieces', '_noty_pieces' ), '' );
+        $self->bien->chambres = (string) self::get_meta_first( $post_id, array( 'up_bien__nb_chambres', 'up_chambres', '_noty_chambres' ), '' );
+        $self->bien->surface_terrain = (string) self::get_meta_first( $post_id, array( 'up_bien__surface_terrain', 'up_surface_terrain', '_noty_surface_terrain' ), '' );
+        $self->bien->salles_eau = (string) self::get_meta_first( $post_id, array( 'up_bien__nb_salles_eau', 'up_salles_eau', '_noty_salles_eau' ), '' );
+        $self->bien->salles_bain = (string) self::get_meta_first( $post_id, array( 'up_bien__nb_sdb', 'up_salles_bain', '_noty_salles_bain' ), '' );
+        $self->bien->niveaux = (string) self::get_meta_first( $post_id, array( 'up_bien__nb_niveaux', 'up_niveaux', '_noty_niveaux' ), '' );
+        $self->bien->ascenseur = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_bien__ascenseur', 'up_ascenseur', '_noty_ascenseur' ), '' ) );
+        $self->bien->piscine = self::format_bool_oui_non( self::get_meta_first( $post_id, array( 'up_bien__piscine', 'up_piscine', '_noty_piscine' ), '' ) );
 
         $self->bien->surface_string = $self->bien->surface !== '' ? ( $self->bien->surface . ' m²' ) : '';
 
