@@ -16,9 +16,9 @@ class Noty_CPT {
 
     public function register_post_type() {
         $labels = array(
-            'name'               => 'Annonces Noty',
-            'singular_name'      => 'Annonce Noty',
-            'menu_name'          => 'Annonces Noty',
+            'name'               => 'Nos annonces',
+            'singular_name'      => 'Annonce',
+            'menu_name'          => 'Nos annonces',
             'add_new'            => 'Ajouter une annonce',
             'add_new_item'       => 'Ajouter une nouvelle annonce',
             'edit_item'          => 'Modifier l\'annonce',
@@ -37,7 +37,7 @@ class Noty_CPT {
             'show_ui'             => true,
             'show_in_menu'        => true,
             'query_var'           => true,
-            'rewrite'             => array( 'slug' => 'annonce-immo' ),
+            'rewrite'             => array( 'slug' => 'annonces' ),
             'capability_type'     => 'post',
             'hierarchical'        => false,
             'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt' ),
