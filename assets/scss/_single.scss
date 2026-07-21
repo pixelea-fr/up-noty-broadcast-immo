@@ -163,4 +163,79 @@ font-size: var(--wp--preset--font-size--xl);
 
   }
 
+  &__contact{
+    &-card{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid color-mix(in srgb, var(--wp--preset--color--base-4) 18%, white);
+      background: color-mix(in srgb, var(--wp--preset--color--base-3) 55%, white);
+      border-radius: var(--wp--custom--border-radius--default);
+
+      @include m(781){
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    &-copy{
+      display: grid;
+      gap: .45rem;
+    }
+
+    &-title{
+      margin: 0;
+    }
+
+    &-office,
+    &-name,
+    &-phone{
+      margin: 0;
+    }
+
+    &-name{
+      font-weight: 600;
+      color: var(--wp--preset--color--base-4);
+    }
+
+    &-phone{
+      a{
+        color: inherit;
+        text-decoration: none;
+
+        &:hover{
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &-actions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+    }
+
+    &-button{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .85rem 1.25rem;
+      border-radius: 0;
+      border: 1px solid var(--wp--preset--color--base-2);
+      background: var(--wp--preset--color--base-2);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+
+      &:hover{
+        background: color-mix(in srgb, var(--wp--preset--color--base-2) 88%, black);
+        border-color: color-mix(in srgb, var(--wp--preset--color--base-2) 88%, black);
+        transform: translateY(-1px);
+      }
+    }
+  }
+
  }

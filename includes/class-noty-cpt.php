@@ -80,6 +80,22 @@ class Noty_CPT {
             'hierarchical' => true,
             'show_in_rest' => true,
         ) );
+
+        // Nombre de pièces
+        register_taxonomy( 'noty_pieces', 'noty_annonce', array(
+            'label'        => 'Nombre de pièces',
+            'rewrite'      => array( 'slug' => 'nombre-pieces' ),
+            'hierarchical' => false,
+            'show_in_rest' => true,
+        ) );
+
+        // Nombre de chambres
+        register_taxonomy( 'noty_chambres', 'noty_annonce', array(
+            'label'        => 'Nombre de chambres',
+            'rewrite'      => array( 'slug' => 'nombre-chambres' ),
+            'hierarchical' => false,
+            'show_in_rest' => true,
+        ) );
     }
 
     public function register_metaboxes() {
@@ -291,6 +307,11 @@ class Noty_CPT {
         $new['noty_transaction'] = 'Transaction';
         $new['noty_ville'] = 'Ville';
         $new['noty_etat'] = 'État';
+        $new['noty_office_map'] = 'Agence (CRPCEN)';
+        $new['noty_contact_name'] = 'Contact';
+        $new['noty_contact_email'] = 'Email';
+        $new['noty_mapping_status'] = 'Mapping';
+        $new['noty_inconsistency'] = 'Incohérence';
 
         foreach ( $columns as $key => $label ) {
             if ( isset( $new[ $key ] ) ) {
@@ -329,6 +350,140 @@ class Noty_CPT {
 
             $names = wp_list_pluck( $terms, 'name' );
             echo esc_html( implode( ', ', $names ) );
+            return;
+        }
+
+        $raw = get_post_meta( $post_id, 'up_raw', true );
+        if ( $raw === '' || $raw === null ) {
+            $raw = get_post_meta( $post_id, '_noty_raw', true );
+        }
+        $raw_data = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+        $office = is_array( $raw_data ) && isset( $raw_data['office'] ) && is_array( $raw_data['office'] ) ? $raw_data['office'] : array();
+        $contact = is_array( $raw_data ) && isset( $raw_data['contact'] ) && is_array( $raw_data['contact'] ) ? $raw_data['contact'] : array();
+
+        if ( $column === 'noty_office_map' ) {
+            $crpcen = isset( $office['crpcen'] ) ? trim( (string) $office['crpcen'] ) : '';
+            $office_data = Noty_Annonce::resolve_office_data( $office, $contact );
+            $office_label = isset( $office_data['label'] ) ? (string) $office_data['label'] : '';
+
+            if ( $crpcen === '' && $office_label === '' ) {
+                echo '—';
+                return;
+            }
+
+            if ( $office_label !== '' ) {
+                echo esc_html( $office_label );
+                if ( $crpcen !== '' ) {
+                    echo '<br><code>' . esc_html( $crpcen ) . '</code>';
+                }
+                return;
+            }
+
+            echo '<span style="color:#b32d2e;font-weight:600;">à mapper</span><br><code>' . esc_html( $crpcen ) . '</code>';
+            return;
+        }
+
+        if ( $column === 'noty_contact_name' ) {
+            $contact_name = isset( $contact['nom'] ) ? trim( (string) $contact['nom'] ) : '';
+            if ( $contact_name === '' ) {
+                echo '—';
+                return;
+            }
+
+            echo esc_html( $contact_name );
+            return;
+        }
+
+        if ( $column === 'noty_contact_email' ) {
+            $contact_email = isset( $contact['email'] ) ? sanitize_email( (string) $contact['email'] ) : '';
+            if ( $contact_email === '' ) {
+                echo '—';
+                return;
+            }
+
+            echo '<code>' . esc_html( $contact_email ) . '</code>';
+            return;
+        }
+
+        if ( $column === 'noty_mapping_status' ) {
+            $crpcen = isset( $office['crpcen'] ) ? trim( (string) $office['crpcen'] ) : '';
+            $contact_email = isset( $contact['email'] ) ? sanitize_email( (string) $contact['email'] ) : '';
+
+            $office_by_email = Noty_Annonce::get_office_data_by_contact_email( $contact_email );
+            $office_by_crpcen = Noty_Annonce::get_office_data_by_crpcen( $crpcen );
+
+            $label_by_email = isset( $office_by_email['label'] ) ? (string) $office_by_email['label'] : '';
+            $label_by_crpcen = isset( $office_by_crpcen['label'] ) ? (string) $office_by_crpcen['label'] : '';
+
+            if ( $label_by_email !== '' && $label_by_crpcen !== '' ) {
+                if ( $label_by_email === $label_by_crpcen ) {
+                    echo '<span style="color:#1d7f1d;font-weight:600;">OK</span>';
+                } else {
+                    echo '<span style="color:#b32d2e;font-weight:600;">Différent</span>';
+                    echo '<br><small>Email : ' . esc_html( $label_by_email ) . '</small>';
+                    echo '<br><small>CRPCEN : ' . esc_html( $label_by_crpcen ) . '</small>';
+                }
+                return;
+            }
+
+            if ( $label_by_email !== '' && $label_by_crpcen === '' ) {
+                echo '<span style="color:#996800;font-weight:600;">Email seul</span>';
+                return;
+            }
+
+            if ( $label_by_email === '' && $label_by_crpcen !== '' ) {
+                echo '<span style="color:#996800;font-weight:600;">CRPCEN seul</span>';
+                return;
+            }
+
+            echo '<span style="color:#b32d2e;font-weight:600;">À mapper</span>';
+            return;
+        }
+
+        if ( $column === 'noty_inconsistency' ) {
+            $issues = array();
+
+            $crpcen = isset( $office['crpcen'] ) ? trim( (string) $office['crpcen'] ) : '';
+            $contact_name = isset( $contact['nom'] ) ? trim( (string) $contact['nom'] ) : '';
+            $contact_email = isset( $contact['email'] ) ? sanitize_email( (string) $contact['email'] ) : '';
+            $contact_phone = isset( $contact['telephone'] ) ? trim( (string) $contact['telephone'] ) : '';
+            $contact_phone_digits = preg_replace( '/\D+/', '', $contact_phone );
+
+            $office_by_email = Noty_Annonce::get_office_data_by_contact_email( $contact_email );
+            $office_by_crpcen = Noty_Annonce::get_office_data_by_crpcen( $crpcen );
+
+            $label_by_email = isset( $office_by_email['label'] ) ? (string) $office_by_email['label'] : '';
+            $label_by_crpcen = isset( $office_by_crpcen['label'] ) ? (string) $office_by_crpcen['label'] : '';
+
+            if ( $contact_name === '' ) {
+                $issues[] = 'Contact manquant';
+            }
+
+            if ( $contact_email === '' ) {
+                $issues[] = 'Email manquant';
+            }
+
+            if ( $contact_phone === '' ) {
+                $issues[] = 'Téléphone manquant';
+            } elseif ( ! (
+                ( strlen( $contact_phone_digits ) === 10 && strpos( $contact_phone_digits, '0' ) === 0 ) ||
+                ( strlen( $contact_phone_digits ) === 11 && strpos( $contact_phone_digits, '33' ) === 0 )
+            ) ) {
+                $issues[] = 'Téléphone incomplet';
+            }
+
+            if ( $label_by_email !== '' && $label_by_crpcen !== '' && $label_by_email !== $label_by_crpcen ) {
+                $issues[] = 'Email / CRPCEN différents';
+            } elseif ( $label_by_email === '' && $label_by_crpcen === '' ) {
+                $issues[] = 'Agence à mapper';
+            }
+
+            if ( empty( $issues ) ) {
+                echo '<span style="color:#1d7f1d;font-weight:600;">RAS</span>';
+                return;
+            }
+
+            echo '<span style="color:#b32d2e;font-weight:600;">' . esc_html( implode( ' · ', $issues ) ) . '</span>';
         }
     }
 

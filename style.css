@@ -216,4 +216,70 @@
 .up-immo-single__table__value {
   color: var(--wp--preset--color--base-4);
   font-weight: 600;
-}/*# sourceMappingURL=style.css.map */
+}
+.up-immo-single__contact-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid
+    color-mix(in srgb, var(--wp--preset--color--base-4) 18%, white);
+  background: color-mix(in srgb, var(--wp--preset--color--base-3) 55%, white);
+  border-radius: var(--wp--custom--border-radius--default);
+}
+@media (max-width: 781px) {
+  .up-immo-single__contact-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.up-immo-single__contact-copy {
+  display: grid;
+  gap: 0.45rem;
+}
+.up-immo-single__contact-title {
+  margin: 0;
+}
+.up-immo-single__contact-office,
+.up-immo-single__contact-name,
+.up-immo-single__contact-phone {
+  margin: 0;
+}
+.up-immo-single__contact-name {
+  font-weight: 600;
+  color: var(--wp--preset--color--base-4);
+}
+.up-immo-single__contact-phone a {
+  color: inherit;
+  text-decoration: none;
+}
+.up-immo-single__contact-phone a:hover {
+  text-decoration: underline;
+}
+.up-immo-single__contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.up-immo-single__contact-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: 0;
+  border: 1px solid var(--wp--preset--color--base-2);
+  background: var(--wp--preset--color--base-2);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.up-immo-single__contact-button:hover {
+  background: color-mix(in srgb, var(--wp--preset--color--base-2) 88%, black);
+  border-color: color-mix(in srgb, var(--wp--preset--color--base-2) 88%, black);
+  transform: translateY(-1px);
+} /*# sourceMappingURL=style.css.map */

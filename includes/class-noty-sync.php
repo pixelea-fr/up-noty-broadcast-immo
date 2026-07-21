@@ -268,6 +268,33 @@ class Noty_Sync {
         if ( ! empty( $annonce['bien']['etat'] ) ) {
             wp_set_object_terms( $post_id, (string) $annonce['bien']['etat'], 'noty_etat' );
         }
+
+        // Nombre de pièces (slug zero-padded pour le tri)
+        if ( ! empty( $annonce['bien']['nb_pieces'] ) ) {
+            $this->set_zero_padded_term( $post_id, (string) $annonce['bien']['nb_pieces'], 'noty_pieces' );
+        }
+
+        // Nombre de chambres (slug zero-padded pour le tri)
+        if ( ! empty( $annonce['bien']['nb_chambres'] ) ) {
+            $this->set_zero_padded_term( $post_id, (string) $annonce['bien']['nb_chambres'], 'noty_chambres' );
+        }
+    }
+
+    private function set_zero_padded_term( $post_id, $value, $taxonomy ) {
+        $slug = sprintf( '%02d', (int) $value );
+        $term = get_term_by( 'slug', $slug, $taxonomy );
+
+        if ( ! $term ) {
+            $result = wp_insert_term( $value, $taxonomy, array( 'slug' => $slug ) );
+            if ( is_wp_error( $result ) ) {
+                return;
+            }
+            $term_id = $result['term_id'];
+        } else {
+            $term_id = $term->term_id;
+        }
+
+        wp_set_object_terms( $post_id, array( (int) $term_id ), $taxonomy );
     }
 
     private function update_metas( $post_id, $annonce ) {

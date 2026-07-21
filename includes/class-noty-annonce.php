@@ -21,6 +21,112 @@ class Noty_Annonce {
 
     public $contact;
 
+    private const OFFICE_DATA_BY_CRPCEN = array(
+        '14050' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        '14056' => array(
+            'label' => 'Étude de Mézidon Vallée d\'Auge',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/mezidon/',
+        ),
+        '14062' => array(
+            'label' => 'Étude de Pont l\'Évêque',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/pont-leveque/',
+        ),
+        '14115' => array(
+            'label' => 'Étude de Deauville',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/deauville/',
+        ),
+    );
+
+    private const OFFICE_DATA_BY_CONTACT_EMAIL = array(
+        'stephane.chaixbryan@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'raynald.chance@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'valerie.outrequin@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'thibaut.bunetel@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'francois.gibourdel@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'jessie.bisson@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'gilda.abellard@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'anthony.jan@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'gerance.lisieux@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'edwige.sorieul@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Lisieux',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/lisieux/',
+        ),
+        'camille.lemetais@chance-varin.notaires.fr' => array(
+            'label' => 'Bureau annexe de Cambremer',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/cambremer/',
+        ),
+        'martin.heulin@chance-varin.notaires.fr' => array(
+            'label' => 'Bureau annexe de Bonnebosq',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/bonnebosq/',
+        ),
+        's.bessindejoybert@notaires.fr' => array(
+            'label' => 'Étude de Mézidon Vallée d\'Auge',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/mezidon/',
+        ),
+        's.bessindejoybert@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Mézidon Vallée d\'Auge',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/mezidon/',
+        ),
+        'carmen.breteauxtabary@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Mézidon Vallée d\'Auge',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/mezidon/',
+        ),
+        'aline.guerin@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Mézidon Vallée d\'Auge',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/mezidon/',
+        ),
+        'victor.hardy@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Pont l\'Évêque',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/pont-leveque/',
+        ),
+        'thomas.houley@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Pont l\'Évêque',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/pont-leveque/',
+        ),
+        'claire.beziau@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Pont l\'Évêque',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/pont-leveque/',
+        ),
+        'raphael.fung@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Deauville',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/deauville/',
+        ),
+        'sandrine.morquin@chance-varin.notaires.fr' => array(
+            'label' => 'Étude de Deauville',
+            'url'   => 'https://chance-varin.notaires.fr/nos-etudes/deauville/',
+        ),
+    );
+
     public function __construct() {
         $this->bien = new Noty_Bien();
         $this->office = (object) array(
@@ -595,5 +701,56 @@ class Noty_Annonce {
             return '';
         }
         return ( $value === '1' || $value === 1 || $value === true || $value === 'true' ) ? 'Oui' : 'Non';
+    }
+
+    public static function resolve_office_data( $office, $contact = array() ) {
+        $office = is_object( $office ) ? (array) $office : ( is_array( $office ) ? $office : array() );
+        $contact = is_object( $contact ) ? (array) $contact : ( is_array( $contact ) ? $contact : array() );
+
+        $crpcen = isset( $office['crpcen'] ) ? trim( (string) $office['crpcen'] ) : '';
+        $email = isset( $contact['email'] ) ? sanitize_email( (string) $contact['email'] ) : '';
+        $email = strtolower( $email );
+
+        if ( $email !== '' && isset( self::OFFICE_DATA_BY_CONTACT_EMAIL[ $email ] ) ) {
+            return self::OFFICE_DATA_BY_CONTACT_EMAIL[ $email ];
+        }
+
+        if ( $crpcen !== '' && isset( self::OFFICE_DATA_BY_CRPCEN[ $crpcen ] ) ) {
+            return self::OFFICE_DATA_BY_CRPCEN[ $crpcen ];
+        }
+
+        return array(
+            'label' => '',
+            'url'   => '',
+        );
+    }
+
+    public static function get_office_data_by_crpcen( $crpcen ) {
+        $crpcen = trim( (string) $crpcen );
+        if ( $crpcen !== '' && isset( self::OFFICE_DATA_BY_CRPCEN[ $crpcen ] ) ) {
+            return self::OFFICE_DATA_BY_CRPCEN[ $crpcen ];
+        }
+
+        return array(
+            'label' => '',
+            'url'   => '',
+        );
+    }
+
+    public static function get_office_data_by_contact_email( $email ) {
+        $email = strtolower( sanitize_email( (string) $email ) );
+        if ( $email !== '' && isset( self::OFFICE_DATA_BY_CONTACT_EMAIL[ $email ] ) ) {
+            return self::OFFICE_DATA_BY_CONTACT_EMAIL[ $email ];
+        }
+
+        return array(
+            'label' => '',
+            'url'   => '',
+        );
+    }
+
+    public static function resolve_office_label( $office, $contact = array() ) {
+        $office_data = self::resolve_office_data( $office, $contact );
+        return isset( $office_data['label'] ) ? (string) $office_data['label'] : '';
     }
 }

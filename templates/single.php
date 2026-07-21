@@ -21,6 +21,27 @@ if ( ! $annonce || ! isset( $annonce->bien ) || ! is_object( $annonce->bien ) ) 
 $bien = $annonce->bien;
 $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $annonce->photos : array();
 
+$office_crpcen = isset( $annonce->office->crpcen ) ? trim( (string) $annonce->office->crpcen ) : '';
+$contact_name = isset( $annonce->contact->nom ) ? trim( (string) $annonce->contact->nom ) : '';
+$contact_phone = isset( $annonce->contact->telephone ) ? trim( (string) $annonce->contact->telephone ) : '';
+$contact_phone_href = preg_replace( '/[^0-9+]/', '', $contact_phone );
+$contact_phone_display = $contact_phone;
+$contact_phone_digits = preg_replace( '/\D+/', '', $contact_phone );
+if ( strpos( $contact_phone_href, '+33' ) === 0 && strlen( $contact_phone_digits ) === 11 ) {
+    $national_number = substr( $contact_phone_digits, 2 );
+    $contact_phone_display = '+33 ' . substr( $national_number, 0, 1 ) . ' ' . trim( chunk_split( substr( $national_number, 1 ), 2, ' ' ) );
+} elseif ( strlen( $contact_phone_digits ) === 10 && strpos( $contact_phone_digits, '0' ) === 0 ) {
+    $contact_phone_display = trim( chunk_split( $contact_phone_digits, 2, ' ' ) );
+}
+$contact_email = isset( $annonce->contact->email ) ? sanitize_email( (string) $annonce->contact->email ) : '';
+$office_data = Noty_Annonce::resolve_office_data( $annonce->office ?? array(), $annonce->contact ?? array() );
+$office_name = isset( $office_data['label'] ) ? (string) $office_data['label'] : '';
+$office_url = isset( $office_data['url'] ) ? (string) $office_data['url'] : '';
+if ( $office_name === '' ) {
+    $office_name = isset( $annonce->office->raison_sociale ) ? trim( (string) $annonce->office->raison_sociale ) : '';
+}
+$has_contact_card = ( $office_name !== '' || $contact_name !== '' || $contact_phone !== '' || $contact_email !== '' );
+
 ?>
 
 <article class="up-immo-single">
@@ -126,27 +147,9 @@ $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $an
         </section>
     <?php endif; ?>
 
-    <?php /* if ( $annonce->office->raison_sociale !== '' || $annonce->contact->nom !== '' || $annonce->contact->telephone !== '' || $annonce->contact->email !== '' ) : ?>
-        <section class="up-immo-single__contact">
-            <h2>Contact</h2>
-            <?php if ( $annonce->office->raison_sociale !== '' ) : ?>
-                <p><strong><?php echo esc_html( $annonce->office->raison_sociale ); ?></strong><?php echo $annonce->office->crpcen !== '' ? esc_html( ' (' . $annonce->office->crpcen . ')' ) : ''; ?></p>
-            <?php endif; ?>
-            <?php if ( $annonce->contact->nom !== '' ) : ?>
-                <p><?php echo esc_html( $annonce->contact->nom ); ?></p>
-            <?php endif; ?>
-            <?php if ( $annonce->contact->telephone !== '' ) : ?>
-                <p><?php echo esc_html( $annonce->contact->telephone ); ?></p>
-            <?php endif; ?>
-            <?php if ( $annonce->contact->email !== '' ) : ?>
-                <p><a href="mailto:<?php echo esc_attr( $annonce->contact->email ); ?>"><?php echo esc_html( $annonce->contact->email ); ?></a></p>
-            <?php endif; ?>
-        </section>
-    <?php endif; */?>
-
      <?php if ( ( isset( $bien->dpe ) && is_object( $bien->dpe ) && isset( $bien->dpe->image_url ) && $bien->dpe->image_url !== '' ) || ( isset( $bien->gse ) && is_object( $bien->gse ) && isset( $bien->gse->image_url ) && $bien->gse->image_url !== '' ) ) : ?>
         <section class="up-immo-single__dpe-gse">
-            <h2 class="up-immo-single__dpe-gse__title">Diagnostiques énergétiques</h2>
+            <h2 class="up-immo-single__dpe-gse__title">Diagnostics énergétiques</h2>
             <div class="up-immo-single__dpe-gse__items">
             <?php if ( isset( $bien->dpe ) && is_object( $bien->dpe ) && isset( $bien->dpe->image_url ) && $bien->dpe->image_url !== '' ) : ?>
              <div class="up-immo-single__dpe-gse__item up-immo-single__dpe-gse__item--dpe">
@@ -161,6 +164,40 @@ $photo_ids = ( isset( $annonce->photos ) && is_array( $annonce->photos ) ) ? $an
                     <img class="up-immo-single__dpe-gse__img up-immo-single__dpe-gse__img--gse" src="<?php echo esc_url( $bien->gse->image_url ); ?>" alt="<?php echo esc_attr( 'GES ' . strtoupper( (string) $bien->gse->lettre ) ); ?>" loading="lazy">
                 </div>
             <?php endif; ?>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php if ( $has_contact_card ) : ?>
+        <section class="up-immo-single__contact" aria-labelledby="up-immo-single-contact-title">
+            <div class="up-immo-single__contact-card">
+                <div class="up-immo-single__contact-copy">
+                    <h2 id="up-immo-single-contact-title" class="up-immo-single__contact-title">Un renseignement sur ce bien ?</h2>
+                    <?php if ( $office_name !== '' ) : ?>
+                        <p class="up-immo-single__contact-office">
+                            <?php if ( $office_url !== '' ) : ?>
+                                <a href="<?php echo esc_url( $office_url ); ?>"><strong><?php echo esc_html( $office_name ); ?></strong></a>
+                            <?php else : ?>
+                                <strong><?php echo esc_html( $office_name ); ?></strong>
+                            <?php endif; ?>
+                        </p>
+                    <?php endif; ?>
+                    <?php if ( $contact_name !== '' ) : ?>
+                        <p class="up-immo-single__contact-name"><?php echo esc_html( $contact_name ); ?></p>
+                    <?php endif; ?>
+                    <?php if ( $contact_phone !== '' ) : ?>
+                        <p class="up-immo-single__contact-phone">
+                            <a href="tel:<?php echo esc_attr( $contact_phone_href ); ?>"><?php echo esc_html( $contact_phone_display ); ?></a>
+                        </p>
+                    <?php endif; ?>
+                </div>
+                <?php if ( $contact_email !== '' ) : ?>
+                    <div class="up-immo-single__contact-actions">
+                        <a class="up-immo-single__contact-button" href="mailto:<?php echo esc_attr( $contact_email ); ?>">
+                            Contacter par email
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
     <?php endif; ?>
