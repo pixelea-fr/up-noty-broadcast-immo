@@ -9,24 +9,39 @@ class Noty_Sync {
     }
 
     public function sync_annonces() {
-        $data = $this->api->get_annonces();
-        if ( is_wp_error( $data ) ) {
-            error_log( 'Noty Sync Error: ' . $data->get_error_message() );
-            return;
-        }
-
-        $this->maybe_dump_json( $data, 'annonces' );
-
-        $annonces = isset( $data['results'] ) ? $data['results'] : [];
         $imported_uuids = array();
-        
-        foreach ( $annonces as $annonce ) {
-            $post_id = $this->process_annonce( $annonce );
-            if ( $post_id && isset( $annonce['uuid'] ) ) {
-                $imported_uuids[] = $annonce['uuid'];
+        $page = 1;
+        $pages = 1;
+        $all_data = null;
+
+        while ( $page <= $pages ) {
+            $data = $this->api->get_annonces( $page );
+            if ( is_wp_error( $data ) ) {
+                error_log( 'Noty Sync Error (page ' . $page . '): ' . $data->get_error_message() );
+                break;
             }
+
+            if ( $all_data === null ) {
+                $all_data = $data;
+            }
+
+            $this->maybe_dump_json( $data, 'annonces' );
+
+            $annonces = isset( $data['results'] ) ? $data['results'] : [];
+            if ( isset( $data['pages'] ) ) {
+                $pages = (int) $data['pages'];
+            }
+
+            foreach ( $annonces as $annonce ) {
+                $post_id = $this->process_annonce( $annonce );
+                if ( $post_id && isset( $annonce['uuid'] ) ) {
+                    $imported_uuids[] = $annonce['uuid'];
+                }
+            }
+
+            $page++;
         }
-        
+
         $this->handle_missing_annonces( $imported_uuids );
     }
 
@@ -60,24 +75,60 @@ class Noty_Sync {
 
     private function process_annonce( $annonce ) {
         $uuid = $annonce['uuid'];
+        $reference = isset( $annonce['reference'] ) ? (string) $annonce['reference'] : '';
 
         $this->update_discovered_meta_paths( $annonce );
-        
-        $existing_posts = get_posts( array(
-            'post_type'  => 'noty_annonce',
-            'meta_query' => array(
-                'relation' => 'OR',
+
+        $dup_mode = get_option( 'noty_duplicate_detection_mode', 'uuid' );
+
+        $meta_query = array( 'relation' => 'OR' );
+
+        if ( $dup_mode === 'uuid' || $dup_mode === 'uuid_reference' ) {
+            $meta_query[] = array(
+                'key'   => 'up_uuid',
+                'value' => $uuid,
+            );
+            $meta_query[] = array(
+                'key'   => '_noty_uuid',
+                'value' => $uuid,
+            );
+        }
+
+        if ( ( $dup_mode === 'reference' || $dup_mode === 'uuid_reference' ) && $reference !== '' ) {
+            $meta_query[] = array(
+                'key'   => 'up_reference',
+                'value' => $reference,
+            );
+            $meta_query[] = array(
+                'key'   => '_noty_reference',
+                'value' => $reference,
+            );
+        }
+
+        if ( count( $meta_query ) <= 1 ) {
+            $meta_query = array(
                 array(
                     'key'   => 'up_uuid',
                     'value' => $uuid,
                 ),
-                array(
-                    'key'   => '_noty_uuid',
-                    'value' => $uuid,
-                ),
-            ),
-            'posts_per_page' => 1,
+            );
+        }
+
+        $existing_posts = get_posts( array(
+            'post_type'      => 'noty_annonce',
+            'meta_query'     => $meta_query,
+            'posts_per_page' => -1,
+            'orderby'        => 'date',
+            'order'          => 'ASC',
         ) );
+
+        if ( count( $existing_posts ) > 1 && get_option( 'noty_delete_duplicates' ) === '1' ) {
+            $keep_post = $existing_posts[0];
+            for ( $i = 1; $i < count( $existing_posts ); $i++ ) {
+                $this->delete_annonce_with_photos( $existing_posts[ $i ]->ID );
+            }
+            $existing_posts = array( $keep_post );
+        }
 
         $post_data = array(
             'post_title'   => $this->generate_title( $annonce ),

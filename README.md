@@ -32,7 +32,8 @@ Ces blocs récupèrent automatiquement l'ID du post depuis le contexte (Query Lo
 
 ## Changelog
 
-- 2026-07-21 · v1.4.10.0 · Mapping des offices par CRPCEN et email, 5 nouvelles colonnes admin (agence, contact, email, mapping, incohérences), nouvelle carte de contact sur la page annonce avec téléphone formaté et bouton email, correction typo « Diagnostiques » → « Diagnostics ».
+- 2026-07-21 · v1.4.10.1 · Masquage du price-note dans les cards pour les locations.
+- 2026-07-21 · v1.4.10.0 · Mapping des offices par CRPCEN et email, 5 nouvelles colonnes admin (agence, contact, email, mapping, incohérences), nouvelle carte de contact sur la page annonce avec téléphone formaté et bouton email, option de détection des doublons (UUID / référence / UUID+référence) avec suppression automatique, colonne « Doublon » dans l'admin, page « Import JSON » avec tableau de vérification et résumé, correction pagination sync (toutes les pages API récupérées), correction typo « Diagnostiques » → « Diagnostics ».
 - 2026-04-20 · v1.4.9.1 · Slugs zero-padded (01, 02, …) pour les taxonomies pièces et chambres afin de garantir le tri correct (01, 02, …, 09, 10, 11 au lieu de 1, 10, 11, 2).
 - 2026-04-20 · v1.4.9.0 · Ajout des taxonomies « Nombre de pièces » (noty_pieces) et « Nombre de chambres » (noty_chambres) avec mise à jour automatique lors de l'import.
 - 2026-04-03 · v1.4.8.5 · Stabilisation et correction des erreurs de syntaxe PHP dans les filtres meta.

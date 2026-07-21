@@ -312,6 +312,7 @@ class Noty_CPT {
         $new['noty_contact_email'] = 'Email';
         $new['noty_mapping_status'] = 'Mapping';
         $new['noty_inconsistency'] = 'Incohérence';
+        $new['noty_duplicate'] = 'Doublon';
 
         foreach ( $columns as $key => $label ) {
             if ( isset( $new[ $key ] ) ) {
@@ -484,6 +485,45 @@ class Noty_CPT {
             }
 
             echo '<span style="color:#b32d2e;font-weight:600;">' . esc_html( implode( ' · ', $issues ) ) . '</span>';
+            return;
+        }
+
+        if ( $column === 'noty_duplicate' ) {
+            $reference = get_post_meta( $post_id, 'up_reference', true );
+            if ( $reference === '' ) {
+                $reference = get_post_meta( $post_id, '_noty_reference', true );
+            }
+            $reference = is_string( $reference ) ? trim( $reference ) : '';
+
+            if ( $reference === '' ) {
+                echo '—';
+                return;
+            }
+
+            $duplicates = get_posts( array(
+                'post_type'      => 'noty_annonce',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'post__not_in'   => array( $post_id ),
+                'meta_query'     => array(
+                    'relation' => 'OR',
+                    array(
+                        'key'   => 'up_reference',
+                        'value' => $reference,
+                    ),
+                    array(
+                        'key'   => '_noty_reference',
+                        'value' => $reference,
+                    ),
+                ),
+            ) );
+
+            if ( count( $duplicates ) > 0 ) {
+                echo '<span style="color:#b32d2e;font-weight:600;">Oui</span>';
+                echo '<br><small>' . count( $duplicates ) . ' autre' . ( count( $duplicates ) > 1 ? 's' : '' ) . '</small>';
+            } else {
+                echo '<span style="color:#1d7f1d;font-weight:600;">Non</span>';
+            }
         }
     }
 

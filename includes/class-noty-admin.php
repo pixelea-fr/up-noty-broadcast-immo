@@ -24,6 +24,15 @@ class Noty_Admin {
             'noty-shortcodes',
             array( $this, 'shortcodes_page' )
         );
+
+        add_submenu_page(
+            'edit.php?post_type=noty_annonce',
+            'Import JSON',
+            'Import JSON',
+            'manage_options',
+            'noty-import-json',
+            array( $this, 'import_json_page' )
+        );
     }
 
     public function register_settings() {
@@ -35,6 +44,8 @@ class Noty_Admin {
         register_setting( 'noty_settings_group', 'noty_selected_meta_paths' );
         register_setting( 'noty_settings_group', 'noty_missing_action' );
         register_setting( 'noty_settings_group', 'noty_delete_photos' );
+        register_setting( 'noty_settings_group', 'noty_duplicate_detection_mode', array( $this, 'sanitize_duplicate_detection_mode' ) );
+        register_setting( 'noty_settings_group', 'noty_delete_duplicates' );
         
         register_setting( 'noty_settings_group', 'noty_fields_location_details', array( $this, 'sanitize_fields_config' ) );
         register_setting( 'noty_settings_group', 'noty_fields_location_resume', array( $this, 'sanitize_fields_config' ) );
@@ -164,6 +175,11 @@ class Noty_Admin {
         <?php
     }
 
+    public function sanitize_duplicate_detection_mode( $value ) {
+        $value = is_string( $value ) ? strtolower( trim( $value ) ) : 'uuid';
+        return in_array( $value, array( 'uuid', 'reference', 'uuid_reference' ), true ) ? $value : 'uuid';
+    }
+
     public function sanitize_price_display_mode( $value ) {
         $value = is_string( $value ) ? strtolower( trim( $value ) ) : 'prix';
 
@@ -263,6 +279,31 @@ class Noty_Admin {
                                 Supprimer les photos rattachées lors de la suppression d'un bien
                             </label>
                             <p class="description">Si activé, les photos de la bibliothèque de médias seront supprimées lorsqu'un bien est supprimé.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Détection des doublons</th>
+                        <td>
+                            <?php $dup_mode = get_option( 'noty_duplicate_detection_mode', 'uuid' ); ?>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_duplicate_detection_mode" value="uuid" <?php checked( $dup_mode, 'uuid' ); ?> />
+                                <strong>UUID</strong> — Détecte les nouveaux posts par UUID uniquement (comportement par défaut)
+                            </label>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_duplicate_detection_mode" value="reference" <?php checked( $dup_mode, 'reference' ); ?> />
+                                <strong>Référence</strong> — Détecte par référence (up_reference). Évite les doublons si l'API change l'UUID.
+                            </label>
+                            <label style="display:block;margin-bottom:8px;">
+                                <input type="radio" name="noty_duplicate_detection_mode" value="uuid_reference" <?php checked( $dup_mode, 'uuid_reference' ); ?> />
+                                <strong>UUID + Référence</strong> — Vérifie par UUID, puis par référence en fallback
+                            </label>
+                            <p class="description">Définit comment les annonces existantes sont détectées lors de l'import pour éviter les doublons.</p>
+                            <div style="margin-top:12px;">
+                                <label>
+                                    <input type="checkbox" name="noty_delete_duplicates" value="1" <?php checked( get_option( 'noty_delete_duplicates' ), '1' ); ?> />
+                                    Supprimer automatiquement les doublons lors du sync (garde le post le plus ancien)
+                                </label>
+                            </div>
                         </td>
                     </tr>
                 </table>
@@ -420,6 +461,211 @@ class Noty_Admin {
                 <p>Cliquez sur le bouton ci-dessous pour lancer immédiatement la récupération des annonces.</p>
                 <?php submit_button( 'Synchroniser maintenant', 'secondary' ); ?>
             </form>
+        </div>
+        <?php
+    }
+
+    public function import_json_page() {
+        $uploads = wp_upload_dir();
+        $dir = trailingslashit( $uploads['basedir'] ) . 'noty-debug';
+
+        $files = array();
+        if ( is_dir( $dir ) ) {
+            $all_files = glob( trailingslashit( $dir ) . 'annonces-*.json' );
+            if ( is_array( $all_files ) ) {
+                rsort( $all_files );
+                $files = $all_files;
+            }
+        }
+
+        $selected_file = isset( $_GET['file'] ) ? sanitize_text_field( wp_unslash( $_GET['file'] ) ) : '';
+        if ( $selected_file === '' && ! empty( $files ) ) {
+            $selected_file = basename( $files[0] );
+        }
+
+        $file_path = '';
+        if ( $selected_file !== '' ) {
+            $candidate = trailingslashit( $dir ) . $selected_file;
+            if ( file_exists( $candidate ) && is_readable( $candidate ) ) {
+                $file_path = $candidate;
+            }
+        }
+
+        $data = null;
+        $annonces = array();
+        $total_api = 0;
+        $pages_api = 0;
+
+        if ( $file_path !== '' ) {
+            $raw = file_get_contents( $file_path );
+            $decoded = json_decode( $raw, true );
+            if ( is_array( $decoded ) ) {
+                $data = $decoded;
+                $annonces = isset( $decoded['results'] ) && is_array( $decoded['results'] ) ? $decoded['results'] : array();
+                $total_api = isset( $decoded['total'] ) ? (int) $decoded['total'] : count( $annonces );
+                $pages_api = isset( $decoded['pages'] ) ? (int) $decoded['pages'] : 1;
+            }
+        }
+
+        $type_labels = array(
+            'vente_traditionnelle' => 'Vente',
+            'location'             => 'Location',
+            'vente_viager'         => 'Viager',
+        );
+
+        $type_counts = array();
+        $wp_counts = array( 'imported' => 0, 'missing' => 0 );
+
+        foreach ( $annonces as $annonce ) {
+            $type = isset( $annonce['transaction'] ) ? (string) $annonce['transaction'] : 'inconnu';
+            if ( is_array( $type ) ) {
+                $type = isset( $type['type'] ) ? (string) $type['type'] : 'inconnu';
+            }
+            if ( ! isset( $type_counts[ $type ] ) ) {
+                $type_counts[ $type ] = 0;
+            }
+            $type_counts[ $type ]++;
+
+            $uuid = isset( $annonce['uuid'] ) ? (string) $annonce['uuid'] : '';
+            $exists = false;
+            if ( $uuid !== '' ) {
+                $found = get_posts( array(
+                    'post_type'      => 'noty_annonce',
+                    'posts_per_page' => 1,
+                    'fields'         => 'ids',
+                    'meta_query'     => array(
+                        'relation' => 'OR',
+                        array( 'key' => 'up_uuid', 'value' => $uuid ),
+                        array( 'key' => '_noty_uuid', 'value' => $uuid ),
+                    ),
+                ) );
+                $exists = ! empty( $found );
+            }
+            if ( $exists ) {
+                $wp_counts['imported']++;
+            } else {
+                $wp_counts['missing']++;
+            }
+        }
+
+        ?>
+        <div class="wrap">
+            <h1>Import JSON — Vérification</h1>
+
+            <?php if ( empty( $files ) ) : ?>
+                <div class="notice notice-warning"><p>Aucun fichier JSON trouvé dans <code>uploads/noty-debug/</code>. Activez « Debug : sauvegarde JSON » dans la configuration et lancez une synchronisation.</p></div>
+            <?php else : ?>
+                <form method="get" action="" style="margin:15px 0;">
+                    <input type="hidden" name="post_type" value="noty_annonce">
+                    <input type="hidden" name="page" value="noty-import-json">
+                    <label for="noty-json-file"><strong>Fichier JSON :</strong></label>
+                    <select name="file" id="noty-json-file" onchange="this.form.submit();">
+                        <?php foreach ( $files as $f ) :
+                            $bn = basename( $f );
+                            $label = preg_replace( '/^annonces-/', '', $bn );
+                            $label = preg_replace( '/\.json$/', '', $label );
+                            ?>
+                            <option value="<?php echo esc_attr( $bn ); ?>" <?php selected( $selected_file, $bn ); ?>><?php echo esc_html( $label ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
+
+            <?php if ( $data !== null ) : ?>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:20px 0;">
+                    <div style="background:#fff;border:1px solid #ccd0d4;padding:15px;border-radius:4px;">
+                        <div style="font-size:28px;font-weight:700;"><?php echo esc_html( count( $annonces ) ); ?></div>
+                        <div style="color:#666;">Biens dans ce fichier</div>
+                    </div>
+                    <div style="background:#fff;border:1px solid #ccd0d4;padding:15px;border-radius:4px;">
+                        <div style="font-size:28px;font-weight:700;color:#2271b1;"><?php echo esc_html( $total_api ); ?></div>
+                        <div style="color:#666;">Total API<?php if ( $pages_api > 1 ) echo ' (' . esc_html( $pages_api ) . ' pages)'; ?></div>
+                    </div>
+                    <?php foreach ( $type_counts as $type => $count ) : ?>
+                        <div style="background:#fff;border:1px solid #ccd0d4;padding:15px;border-radius:4px;">
+                            <div style="font-size:28px;font-weight:700;"><?php echo esc_html( $count ); ?></div>
+                            <div style="color:#666;"><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div style="background:#fff;border:1px solid #ccd0d4;padding:15px;border-radius:4px;">
+                        <div style="font-size:28px;font-weight:700;color:#1d7f1d;"><?php echo esc_html( $wp_counts['imported'] ); ?></div>
+                        <div style="color:#666;">Importés dans WP</div>
+                    </div>
+                    <div style="background:#fff;border:1px solid #ccd0d4;padding:15px;border-radius:4px;">
+                        <div style="font-size:28px;font-weight:700;color:<?php echo $wp_counts['missing'] > 0 ? '#b32d2e' : '#1d7f1d'; ?>;"><?php echo esc_html( $wp_counts['missing'] ); ?></div>
+                        <div style="color:#666;">Manquants dans WP</div>
+                    </div>
+                </div>
+
+                <?php if ( $pages_api > 1 ) : ?>
+                    <div class="notice notice-warning"><p><strong>Attention :</strong> l'API retourne <?php echo esc_html( $total_api ); ?> biens sur <?php echo esc_html( $pages_api ); ?> pages, mais ce fichier ne contient que <?php echo esc_html( count( $annonces ) ); ?> biens (page 1 uniquement). Les biens des autres pages ne sont pas synchronisés.</p></div>
+                <?php endif; ?>
+
+                <table class="widefat striped" style="margin-top:15px;">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th style="width:140px;">Référence</th>
+                            <th>Ville</th>
+                            <th style="width:160px;">Type</th>
+                            <th style="width:100px;text-align:right;">Prix</th>
+                            <th style="width:80px;">WP</th>
+                            <th>UUID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $annonces as $i => $annonce ) :
+                            $uuid = isset( $annonce['uuid'] ) ? (string) $annonce['uuid'] : '';
+                            $reference = isset( $annonce['reference'] ) ? (string) $annonce['reference'] : '';
+                            $ville = isset( $annonce['bien']['commune']['libelle'] ) ? (string) $annonce['bien']['commune']['libelle'] : '';
+                            $type = isset( $annonce['transaction'] ) ? (string) $annonce['transaction'] : '';
+                            if ( is_array( $annonce['transaction'] ?? null ) ) {
+                                $type = isset( $annonce['transaction']['type'] ) ? (string) $annonce['transaction']['type'] : '';
+                            }
+                            $prix = isset( $annonce['prix'] ) ? (int) $annonce['prix'] : 0;
+                            $loyer = isset( $annonce['loyer'] ) ? (int) $annonce['loyer'] : 0;
+                            $prix_display = $prix > 0 ? number_format( $prix, 0, ',', ' ' ) . ' €' : ( $loyer > 0 ? number_format( $loyer, 0, ',', ' ' ) . ' €/mois' : '—' );
+
+                            $exists = false;
+                            $wp_post_id = 0;
+                            if ( $uuid !== '' ) {
+                                $found = get_posts( array(
+                                    'post_type'      => 'noty_annonce',
+                                    'posts_per_page' => 1,
+                                    'fields'         => 'ids',
+                                    'meta_query'     => array(
+                                        'relation' => 'OR',
+                                        array( 'key' => 'up_uuid', 'value' => $uuid ),
+                                        array( 'key' => '_noty_uuid', 'value' => $uuid ),
+                                    ),
+                                ) );
+                                if ( ! empty( $found ) ) {
+                                    $exists = true;
+                                    $wp_post_id = $found[0];
+                                }
+                            }
+                        ?>
+                            <tr<?php echo $exists ? '' : ' style="background:#fef7f7;"'; ?>>
+                                <td><?php echo esc_html( $i + 1 ); ?></td>
+                                <td><strong><?php echo esc_html( $reference ); ?></strong></td>
+                                <td><?php echo esc_html( $ville ); ?></td>
+                                <td><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></td>
+                                <td style="text-align:right;"><?php echo esc_html( $prix_display ); ?></td>
+                                <td>
+                                    <?php if ( $exists ) : ?>
+                                        <a href="<?php echo esc_url( get_edit_post_link( $wp_post_id ) ); ?>" style="color:#1d7f1d;font-weight:600;">✓</a>
+                                    <?php else : ?>
+                                        <span style="color:#b32d2e;font-weight:600;">✕</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><code style="font-size:11px;color:#999;"><?php echo esc_html( substr( $uuid, 0, 8 ) ); ?>…</code></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php elseif ( ! empty( $files ) ) : ?>
+                <div class="notice notice-error"><p>Impossible de lire le fichier JSON sélectionné.</p></div>
+            <?php endif; ?>
         </div>
         <?php
     }

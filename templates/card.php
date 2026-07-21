@@ -39,7 +39,7 @@ $bien = $annonce->bien;
         <div class="up-immo-card__price-container">
             <span class="up-immo-card__price">
                 <?php echo $bien->prix_ou_loyer !== '' ? esc_html($bien->prix_ou_loyer) : 'Prix sur demande'; ?>
-                <?php if ( $price_note !== '' && $bien->prix_ou_loyer !== '' ) : ?>
+                <?php if ( $price_note !== '' && $bien->prix_ou_loyer !== '' && strtolower( trim( (string) $bien->transaction_type ) ) !== 'location' ) : ?>
                     <small class="up-immo-card__price-note"<?php echo $price_note_tooltip !== '' ? ' title="' . esc_attr( $price_note_tooltip ) . '"' : ''; ?>><?php echo esc_html( $price_note ); ?></small>
                 <?php endif; ?>
             </span>
